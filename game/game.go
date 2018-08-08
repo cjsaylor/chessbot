@@ -75,8 +75,13 @@ func (g Game) ResultText() string {
 	return fmt.Sprintf("Game completed. %s by %s.", g.Outcome(), g.game.Method())
 }
 
-func (g Game) Move(gridMove string) error {
-	return g.game.MoveStr(gridMove)
+func (g Game) Move(san string) (*chess.Move, error) {
+	err := g.game.MoveStr(san)
+	if err != nil {
+		return nil, err
+	}
+	moves := g.game.Moves()
+	return moves[len(moves)-1], nil
 }
 
 func (g Game) ValidMoves() []*chess.Move {

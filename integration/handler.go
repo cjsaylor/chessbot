@@ -85,7 +85,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if ev.User != gm.Players[gm.Turn()].ID {
 				log.Println("ignoreing player input as it is not their turn")
 			}
-			err := gm.Move(input[1])
+			move, err := gm.Move(input[1])
 			if err != nil {
 				s.SlackClient.PostMessage(ev.Channel, err.Error(), slack.PostMessageParameters{
 					ThreadTimestamp: ev.TimeStamp,
@@ -96,8 +96,12 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				ThreadTimestamp: ev.TimeStamp,
 				Attachments: []slack.Attachment{
 					slack.Attachment{
-						Text:     "TODO - Put last move here",
-						ImageURL: fmt.Sprintf("%v/board?fen=%v", s.Hostname, url.QueryEscape(gm.FEN())),
+						Text: move.String(),
+						ImageURL: fmt.Sprintf(
+							"%v/board?fen=%v&last_move=%v",
+							s.Hostname,
+							url.QueryEscape(gm.FEN()),
+							url.QueryEscape(fmt.Sprintf("%v %v", move.S1().String(), move.S2().String()))),
 					},
 				},
 				LinkNames: 1,
