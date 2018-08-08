@@ -8,9 +8,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
-	"github.com/nlopes/slack"
-	"github.com/nlopes/slack/slackevents"
+	"github.com/cjsaylor/chessbot/game"
+	"github.com/cjsaylor/slack"
+	"github.com/cjsaylor/slack/slackevents"
 )
 
 type SlackHandler struct {
@@ -22,6 +25,12 @@ type SlackHandler struct {
 }
 
 const requestVersion = "v0"
+
+var games map[string]*game.Game
+
+func init() {
+	games = make(map[string]*game.Game)
+}
 
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -53,17 +62,46 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.AppMentionEvent:
-			log.Print(ev.Text)
-			postParams := slack.PostMessageParameters{
+			gm := games[ev.ThreadTimeStamp]
+			if gm == nil {
+				gm := game.NewGame(game.Player{
+					ID: ev.User,
+				}, game.Player{
+					ID: ev.User,
+				})
+				games[ev.TimeStamp] = gm
+				s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
+					ThreadTimestamp: ev.TimeStamp,
+					Attachments: []slack.Attachment{
+						slack.Attachment{
+							Text:     "Opening",
+							ImageURL: fmt.Sprintf("%v/board?fen=%v", s.Hostname, url.QueryEscape(gm.FEN())),
+						},
+					},
+				})
+				break
+			}
+			input := strings.Split(ev.Text, " ")
+			if ev.User != gm.Players[gm.Turn()].ID {
+				log.Println("ignoreing player input as it is not their turn")
+			}
+			err := gm.Move(input[1])
+			if err != nil {
+				s.SlackClient.PostMessage(ev.Channel, err.Error(), slack.PostMessageParameters{
+					ThreadTimestamp: ev.TimeStamp,
+				})
+				break
+			}
+			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
 				ThreadTimestamp: ev.TimeStamp,
 				Attachments: []slack.Attachment{
 					slack.Attachment{
-						Text:     "Game in progress",
-						ImageURL: s.Hostname + "/board?fen=r1b1k2r/pp1n1ppp/2n1p3/q1bpP3/N2N1P2/P3B3/1PP3PP/R2QKB1R%20w%20KQkq%20-%203%2013&last_move=b6%20a5&checked_tile=e1",
+						Text:     "TODO - Put last move here",
+						ImageURL: fmt.Sprintf("%v/board?fen=%v", s.Hostname, url.QueryEscape(gm.FEN())),
 					},
 				},
-			}
-			s.SlackClient.PostMessage(ev.Channel, "Yes, hello.", postParams)
+				LinkNames: 1,
+			})
 		}
 	}
 

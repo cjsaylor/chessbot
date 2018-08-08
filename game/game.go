@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/notnil/chess"
 )
@@ -13,14 +14,28 @@ const (
 	Black Color = "Black"
 )
 
-type Game struct {
-	game *chess.Game
+type Player struct {
+	ID string
 }
 
-func NewGame() Game {
-	return Game{
+type Game struct {
+	game    *chess.Game
+	Players map[Color]Player
+}
+
+func NewGame(players ...Player) *Game {
+	gm := Game{
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
+	randomOrder := make([]Player, len(players))
+	perm := rand.Perm(len(players))
+	for i, v := range perm {
+		randomOrder[v] = players[i]
+	}
+	gm.Players = make(map[Color]Player)
+	gm.Players[White] = randomOrder[0]
+	gm.Players[Black] = randomOrder[1]
+	return &gm
 }
 
 func NewGameFromFEN(fen string) (Game, error) {
@@ -62,6 +77,10 @@ func (g Game) ResultText() string {
 
 func (g Game) Move(gridMove string) error {
 	return g.game.MoveStr(gridMove)
+}
+
+func (g Game) ValidMoves() []*chess.Move {
+	return g.game.ValidMoves()
 }
 
 func (g Game) String() string {
