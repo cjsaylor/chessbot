@@ -3,8 +3,10 @@ package config
 import "github.com/caarlos0/env"
 
 type Configuration struct {
-	Port     int    `env:"PORT" envDefault:"8080"`
-	Hostname string `env:"HOSTNAME" envDefault:"localhost:8080"`
+	Port                   int    `env:"PORT" envDefault:"8080"`
+	Hostname               string `env:"HOSTNAME" envDefault:"localhost:8080"`
+	SlackBotToken          string `env:"SLACKBOTTOKEN"`
+	SlackVerificationToken string `env:"SLACKVERIFICATIONTOKEN"`
 }
 
 func ParseConfiguration() (Configuration, error) {
