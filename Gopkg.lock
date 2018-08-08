@@ -14,6 +14,12 @@
   revision = "e42de691c093690b073a71c108b4ec2f20c2a298"
 
 [[projects]]
+  name = "github.com/cjsaylor/slack"
+  packages = [".","slackevents"]
+  revision = "0db1d5eae1116bf7c8ed96c6749acfbf4daaec3e"
+  version = "v0.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/flopp/go-findfont"
   packages = ["."]
@@ -32,6 +38,24 @@
   revision = "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4"
 
 [[projects]]
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/nlopes/slack"
+  packages = ["."]
+  revision = "0db1d5eae1116bf7c8ed96c6749acfbf4daaec3e"
+  version = "v0.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/notnil/chess"
+  packages = ["."]
+  revision = "d0248440c2c6602df91c111b98c11b9837de82ba"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/image"
   packages = ["draw","font","font/basicfont","font/plan9font","math/f64","math/fixed"]
@@ -40,6 +64,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "be4445fb53131f1cc59b1b02fe791e598acab5e07e76a32e0cddd74709c231fc"
+  inputs-digest = "7acae00e563454d0bb3095ff080bf9091a499bea469038cd113497d1e24b6da6"
   solver-name = "gps-cdcl"
   solver-version = 1

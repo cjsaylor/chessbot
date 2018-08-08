@@ -1,0 +1,1 @@
+These images are originally sourced from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent under CC BY-SA 3.0
