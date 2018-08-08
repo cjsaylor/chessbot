@@ -11,9 +11,11 @@ import (
 const foolsMate = "rnbqkbnr/pppp1ppp/8/8/5P2/8/PPPPP2P/RNBQKBNR b KQkq - 03"
 
 func main() {
-
 	fmt.Println("Game REPL")
-	initialState := os.Args[1]
+	initialState := ""
+	if len(os.Args) > 1 {
+		initialState = os.Args[1]
+	}
 	var gm game.Game
 	if string(initialState) != "" {
 		var err error
@@ -35,6 +37,8 @@ func main() {
 			fmt.Println(gm.FEN())
 			fmt.Print("\n> ")
 			continue
+		} else if input == "exit" {
+			os.Exit(0)
 		}
 		err := gm.Move(input)
 		if err != nil {
