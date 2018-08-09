@@ -13,6 +13,7 @@ import (
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/slack"
 	"github.com/cjsaylor/slack/slackevents"
+	"github.com/notnil/chess"
 )
 
 type SlackHandler struct {
@@ -117,15 +118,37 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		s.sendError(gameID, ev.Channel, err.Error())
 		return
 	}
-	s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
-		ThreadTimestamp: ev.TimeStamp,
-		Attachments: []slack.Attachment{
-			slack.Attachment{
-				Text:     chessMove.String(),
-				ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
-			},
-		},
-	})
+	boardAttachment := slack.Attachment{
+		Text:     chessMove.String(),
+		ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
+	}
+	if outcome := gm.Outcome(); outcome != "*" {
+		if outcome == chess.Draw {
+			s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
+				ThreadTimestamp: ev.TimeStamp,
+				Attachments:     []slack.Attachment{boardAttachment},
+			})
+		} else {
+			var winningPlayer game.Player
+			if outcome == chess.WhiteWon {
+				winningPlayer = gm.Players[game.White]
+			} else {
+				winningPlayer = gm.Players[game.Black]
+			}
+			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("Congratulation <@%v>!", winningPlayer.ID), slack.PostMessageParameters{
+				ThreadTimestamp: ev.TimeStamp,
+				Attachments:     []slack.Attachment{boardAttachment},
+			})
+			// @todo persist record to some incremental storage (redis, etc)
+		}
+
+		fmt.Println(gm.ResultText())
+	} else {
+		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
+			ThreadTimestamp: ev.TimeStamp,
+			Attachments:     []slack.Attachment{boardAttachment},
+		})
+	}
 }
 
 func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
