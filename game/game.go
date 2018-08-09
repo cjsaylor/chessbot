@@ -140,6 +140,17 @@ func (g *Game) ValidMoves() []*chess.Move {
 	return g.game.ValidMoves()
 }
 
+func (g *Game) CheckedKing() chess.Square {
+	squareMap := g.game.Position().Board().SquareMap()
+	lastMovePiece := squareMap[g.LastMove().S2()]
+	for square, piece := range squareMap {
+		if piece.Type() == chess.King && piece.Color() == lastMovePiece.Color().Other() {
+			return square
+		}
+	}
+	return chess.NoSquare
+}
+
 // String representation of the current game state (draws an ascii board)
 func (g *Game) String() string {
 	return g.game.Position().Board().Draw()
