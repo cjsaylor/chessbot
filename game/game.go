@@ -7,6 +7,13 @@ import (
 	"github.com/notnil/chess"
 )
 
+type Challenge struct {
+	ChallengerID string
+	ChallengedID string
+	GameID       string
+	ChannelID    string
+}
+
 type Color string
 
 const (
