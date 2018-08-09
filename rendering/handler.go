@@ -37,7 +37,6 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	log.Println(game)
 	fen := game.FEN()
 	board, err := chessimage.NewRendererFromFEN(string(fen))
 	if lastMove := game.LastMove(); lastMove != nil {
