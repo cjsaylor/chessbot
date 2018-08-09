@@ -19,9 +19,11 @@ type Player struct {
 }
 
 type Game struct {
-	game    *chess.Game
-	Players map[Color]Player
-	started bool
+	game        *chess.Game
+	Players     map[Color]Player
+	started     bool
+	lastMove    *chess.Move
+	checkedTile *chess.Square
 }
 
 func NewGame(players ...Player) *Game {
@@ -81,6 +83,10 @@ func (g *Game) ResultText() string {
 	return fmt.Sprintf("Game completed. %s by %s.", g.Outcome(), g.game.Method())
 }
 
+func (g *Game) LastMove() *chess.Move {
+	return g.lastMove
+}
+
 func (g *Game) Move(san string) (*chess.Move, error) {
 	err := g.game.MoveStr(san)
 	if err != nil {
@@ -88,7 +94,8 @@ func (g *Game) Move(san string) (*chess.Move, error) {
 	}
 	moves := g.game.Moves()
 	g.started = true
-	return moves[len(moves)-1], nil
+	g.lastMove = moves[len(moves)-1]
+	return g.lastMove, nil
 }
 
 func (g *Game) Start() {

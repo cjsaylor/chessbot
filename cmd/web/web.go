@@ -23,7 +23,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/board", rendering.BoardRenderHandler{})
+	http.Handle("/board", rendering.BoardRenderHandler{
+		Storage: memoryStore,
+	})
 	http.Handle("/slack", integration.SlackHandler{
 		BotToken:          config.SlackBotToken,
 		VerificationToken: config.SlackVerificationToken,

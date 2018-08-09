@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/cjsaylor/chessbot/game"
@@ -79,7 +78,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					Attachments: []slack.Attachment{
 						slack.Attachment{
 							Text:     "Opening",
-							ImageURL: fmt.Sprintf("%v/board?fen=%v", s.Hostname, url.QueryEscape(gm.FEN())),
+							ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
 						},
 					},
 				})
@@ -102,12 +101,8 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				ThreadTimestamp: ev.TimeStamp,
 				Attachments: []slack.Attachment{
 					slack.Attachment{
-						Text: move.String(),
-						ImageURL: fmt.Sprintf(
-							"%v/board?fen=%v&last_move=%v",
-							s.Hostname,
-							url.QueryEscape(gm.FEN()),
-							url.QueryEscape(fmt.Sprintf("%v %v", move.S1().String(), move.S2().String()))),
+						Text:     move.String(),
+						ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
 					},
 				},
 			})
