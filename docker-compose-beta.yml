@@ -7,12 +7,9 @@ services:
       - VIRTUAL_HOST=chessbot.chris-saylor.com
     env_file: .env
     networks:
-      - chessbot-nw
       - public-nw
 
 networks:
-  bmu-nw:
-    driver: bridge
   public-nw:
     external:
       name: public-nw
