@@ -61,7 +61,7 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for k, v := range noCacheHeaders {
 		w.Header().Set(k, v)
 	}
-	image, err := board.Render(chessimage.Options{AssetPath: "../chessimage/assets/"})
+	image, err := board.Render(chessimage.Options{AssetPath: "./assets/"})
 	if err != nil {
 		log.Println(err)
 	}
