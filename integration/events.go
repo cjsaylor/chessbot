@@ -122,11 +122,19 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		Text:     chessMove.String(),
 		ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
 	}
-	if outcome := gm.Outcome(); outcome != "*" {
+	if outcome := gm.Outcome(); outcome != chess.NoOutcome {
+		fenAttachment := slack.Attachment{
+			Title: "FEN",
+			Text:  fmt.Sprintf("`%v`", gm.FEN()),
+		}
+		pgnAttachment := slack.Attachment{
+			Title: "PGN",
+			Text:  fmt.Sprintf("`%v`", gm.PGN()),
+		}
 		if outcome == chess.Draw {
 			s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
 				ThreadTimestamp: ev.TimeStamp,
-				Attachments:     []slack.Attachment{boardAttachment},
+				Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
 			})
 		} else {
 			var winningPlayer game.Player
@@ -137,7 +145,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 			}
 			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("Congratulation <@%v>!", winningPlayer.ID), slack.PostMessageParameters{
 				ThreadTimestamp: ev.TimeStamp,
-				Attachments:     []slack.Attachment{boardAttachment},
+				Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
 			})
 			// @todo persist record to some incremental storage (redis, etc)
 		}
