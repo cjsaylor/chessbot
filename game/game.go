@@ -27,29 +27,35 @@ type Game struct {
 }
 
 func NewGame(players ...Player) *Game {
-	gm := Game{
+	gm := &Game{
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
+	attachPlayers(gm, players...)
+	return gm
+}
+
+func attachPlayers(game *Game, players ...Player) {
 	randomOrder := make([]Player, len(players))
 	perm := rand.Perm(len(players))
 	for i, v := range perm {
 		randomOrder[v] = players[i]
 	}
-	gm.Players = make(map[Color]Player)
-	gm.Players[White] = randomOrder[0]
-	gm.Players[Black] = randomOrder[1]
-	return &gm
+	game.Players = make(map[Color]Player)
+	game.Players[White] = randomOrder[0]
+	game.Players[Black] = randomOrder[1]
 }
 
-func NewGameFromFEN(fen string) (Game, error) {
+func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
 	gameState, err := chess.FEN(fen)
 	if err != nil {
-		return Game{}, err
+		return &Game{}, err
 	}
-	return Game{
+	game := &Game{
 		game:    chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
 		started: true,
-	}, nil
+	}
+	attachPlayers(game, players...)
+	return game, nil
 }
 
 func (g *Game) TurnPlayer() Player {
