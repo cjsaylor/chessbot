@@ -24,13 +24,21 @@ func main() {
 		log.Fatal(err)
 	}
 	http.Handle("/board", rendering.BoardRenderHandler{
-		Storage: memoryStore,
+		GameStorage: memoryStore,
 	})
 	http.Handle("/slack", integration.SlackHandler{
 		BotToken:          config.SlackBotToken,
 		VerificationToken: config.SlackVerificationToken,
 		Hostname:          config.Hostname,
-		Storage:           memoryStore,
+		GameStorage:       memoryStore,
+		ChallengeStorage:  memoryStore,
+	})
+	http.Handle("/slack/action", integration.SlackActionHandler{
+		BotToken:          config.SlackBotToken,
+		VerificationToken: config.SlackVerificationToken,
+		Hostname:          config.Hostname,
+		GameStorage:       memoryStore,
+		ChallengeStorage:  memoryStore,
 	})
 	log.Printf("Listening on port %v\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Port), nil))

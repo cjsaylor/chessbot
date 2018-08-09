@@ -20,7 +20,7 @@ var noCacheHeaders = map[string]string{
 }
 
 type BoardRenderHandler struct {
-	Storage game.GameStorage
+	GameStorage game.GameStorage
 }
 
 func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	game, err := b.Storage.RetrieveGame(gameID[0])
+	game, err := b.GameStorage.RetrieveGame(gameID[0])
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return

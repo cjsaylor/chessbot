@@ -21,7 +21,8 @@ type SlackHandler struct {
 	SigningKey        string
 	Hostname          string
 	SlackClient       *slack.Client
-	Storage           game.GameStorage
+	GameStorage       game.GameStorage
+	ChallengeStorage  game.ChallengeStorage
 }
 
 const requestVersion = "v0"
@@ -90,7 +91,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			case moveCommand:
 				s.handleMoveCommand(gameID, captures[0], ev)
 			case challengeCommand:
-				s.sendError(gameID, ev.Channel, "Challenge not implemented yet, stay tuned...")
+				s.handleChallengeCommand(gameID, captures[0], ev)
 			}
 		}
 	}
@@ -100,7 +101,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // This will not be the case once the challenge command is implemented
 // Initiates a "self" game
 func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackevents.AppMentionEvent) {
-	gm, err := s.Storage.RetrieveGame(gameID)
+	gm, err := s.GameStorage.RetrieveGame(gameID)
 	if err != nil {
 		log.Println(err)
 		gm = game.NewGame(game.Player{
@@ -108,20 +109,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		}, game.Player{
 			ID: ev.User,
 		})
-		s.Storage.StoreGame(gameID, gm)
-	}
-	if !gm.Started() {
-		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
-			ThreadTimestamp: ev.TimeStamp,
-			Attachments: []slack.Attachment{
-				slack.Attachment{
-					Text:     "Opening",
-					ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
-				},
-			},
-		})
-		gm.Start()
-		return
+		s.GameStorage.StoreGame(gameID, gm)
 	}
 	player := gm.TurnPlayer()
 	if ev.User != player.ID {
@@ -138,6 +126,46 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 			slack.Attachment{
 				Text:     chessMove.String(),
 				ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
+			},
+		},
+	})
+}
+
+func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
+	_, _, channelID, err := s.SlackClient.OpenIMChannel(challengedUser)
+	if err != nil {
+		log.Printf("unable to challenge %v: %v", challengedUser, err)
+		s.sendError(gameID, ev.Channel, "Unable to challenge that player. :(")
+		return
+	}
+	challenge := &game.Challenge{
+		ChallengerID: ev.User,
+		ChallengedID: challengedUser,
+		GameID:       gameID,
+		ChannelID:    ev.Channel,
+	}
+	s.ChallengeStorage.StoreChallenge(challenge)
+	s.SlackClient.PostMessage(channelID, fmt.Sprintf("<@%v> has challenged you to a game of chess!", ev.User), slack.PostMessageParameters{
+		Attachments: []slack.Attachment{
+			slack.Attachment{
+				Text:       "Do you accept?",
+				Fallback:   "Unable to accept the challenge.",
+				CallbackID: "challenge_response",
+				Actions: []slack.AttachmentAction{
+					slack.AttachmentAction{
+						Name:  "challenge",
+						Text:  "Accept Challenge",
+						Type:  "button",
+						Value: "accept",
+					},
+					slack.AttachmentAction{
+						Name:  "challenge",
+						Text:  "Decline",
+						Type:  "button",
+						Style: "danger",
+						Value: "reject",
+					},
+				},
 			},
 		},
 	})
