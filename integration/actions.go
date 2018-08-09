@@ -40,17 +40,23 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 		return
 	}
-	if event.Actions[0].Value != "accept" {
-		return
-	}
-	if s.SlackClient == nil {
-		s.SlackClient = slack.New(s.BotToken)
-	}
 	results := regexp.MustCompile("^<@([\\w|\\d]+).*$").FindStringSubmatch(event.OriginalMessage.Text)
 	challenge, err := s.ChallengeStorage.RetrieveChallenge(results[1], event.User.Id)
 	if err != nil {
 		log.Println(err)
 		return
+	}
+	if event.Actions[0].Value != "accept" {
+		s.SlackClient.PostMessage(challenge.ChallengedID, "Challenge declined by player.", slack.PostMessageParameters{
+			ThreadTimestamp: challenge.GameID,
+		})
+		if err := s.ChallengeStorage.RemoveChallenge(challenge.ChallengerID, challenge.ChallengedID); err != nil {
+			log.Printf("Failed to remove challenge %v: %v\n", challenge, err)
+		}
+		return
+	}
+	if s.SlackClient == nil {
+		s.SlackClient = slack.New(s.BotToken)
 	}
 	gameID := challenge.GameID
 	gm := game.NewGame(game.Player{
