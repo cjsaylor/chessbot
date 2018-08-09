@@ -97,9 +97,6 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Currently this function initiates a game if not found
-// This will not be the case once the challenge command is implemented
-// Initiates a "self" game
 func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackevents.AppMentionEvent) {
 	gm, err := s.GameStorage.RetrieveGame(gameID)
 	if err != nil {
