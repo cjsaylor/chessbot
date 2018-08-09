@@ -1,8 +1,10 @@
 # ChessBot
 
-> Currently under development (not even Alpha)
+> Currently under development
 
 This is a Slack bot that allows players in a channel to challenge each other to a game of Chess.
+
+![](./doc/screenshot.png)
 
 ## Quick Start
 
@@ -10,13 +12,65 @@ This is a Slack bot that allows players in a channel to challenge each other to 
 go run cmd/web/web.go
 ```
 
+> See `Configuration` for all environment vars
+
 ## Endpoints
 
 ```
-GET /board?fen=&last_move=&checked_tile=
+GET /board?game_id=
 ```
 
-When games start getting persisted, the above will probably be replaced by a game ID to pull the fen/last_move/checked_title
+Renders the game board based on the state of a game by ID (slack `thread_ts`)
+
+```
+POST /slack
+```
+
+All slack event subscription callbacks flow through this.
+
+## Testing the Chess Engine
+
+```
+go run cmd/repl/main.go
+```
+
+```
+λ go run cmd/repl/main.go
+Game REPL
+Note the chess board is rendered backwords (white = black) :(
+
+ A B C D E F G H
+8♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+7♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+6- - - - - - - -
+5- - - - - - - -
+4- - - - - - - -
+3- - - - - - - -
+2♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+{player1}
+player1's turn (White)
+
+> d2d4
+
+ A B C D E F G H
+8♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+7♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+6- - - - - - - -
+5- - - - - - - -
+4- - - ♙ - - - -
+3- - - - - - - -
+2♙ ♙ ♙ - ♙ ♙ ♙ ♙
+1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+player2's turn (Black)
+
+> fen
+rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+
+>
+```
 
 ## Why not use Slack's RTM API?
 
