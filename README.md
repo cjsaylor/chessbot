@@ -1,5 +1,7 @@
 # ChessBot
 
+[![GoDoc](https://godoc.org/github.com/cjsaylor/chessbot?status.svg)](https://godoc.org/github.com/cjsaylor/chessbot)
+
 > Currently under development
 
 This is a Slack bot that allows players in a channel to challenge each other to a game of Chess.
