@@ -2,68 +2,107 @@
 
 
 [[projects]]
+  digest = "1:e361cb646a33874cf6521b5c4e77c9208b4b58c7fd3893b8c87f61f49b19d991"
   name = "github.com/caarlos0/env"
   packages = ["."]
+  pruneopts = "UT"
   revision = "1cddc31c48c56ecd700d873edb9fd5b6f5df922a"
   version = "v3.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:0fc496ad11c334588d28477081602691f662b3da43d88feee99d913cf1330851"
   name = "github.com/cjsaylor/chessimage"
   packages = ["."]
+  pruneopts = "UT"
   revision = "e42de691c093690b073a71c108b4ec2f20c2a298"
 
 [[projects]]
+  digest = "1:ebb217fd78f12218d875b56fb7aee0d732b9c7fd4836cb46130a195fc127f336"
   name = "github.com/cjsaylor/slack"
-  packages = [".","slackevents"]
-  revision = "0db1d5eae1116bf7c8ed96c6749acfbf4daaec3e"
-  version = "v0.3.0"
+  packages = [
+    ".",
+    "slackevents",
+  ]
+  pruneopts = "UT"
+  revision = "bc36d194ec3baf016e9effe5004a4173efde2a32"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:4f1bf78ec2d99a8cb0250987262cbfac2ee1b011a702d2bdaad9a2037cfa50f7"
   name = "github.com/flopp/go-findfont"
   packages = ["."]
+  pruneopts = "UT"
   revision = "e788239e52bccbae8c957dbc5c4daeb4fcb9c38b"
 
 [[projects]]
+  digest = "1:1758e788ff491eac33104f164d720408fdd0c294c639c883350463c4435af316"
   name = "github.com/fogleman/gg"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a9ff18eccd6d57b3c8576a71a91a04868f62078c"
   version = "v1.1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:62c57507df491b657e9ae2645f30958d9964c8eeb380600469eedc951ebb3a0e"
   name = "github.com/golang/freetype"
-  packages = ["raster","truetype"]
+  packages = [
+    "raster",
+    "truetype",
+  ]
+  pruneopts = "UT"
   revision = "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4"
 
 [[projects]]
+  digest = "1:43dd08a10854b2056e615d1b1d22ac94559d822e1f8b6fcc92c1a1057e85188e"
   name = "github.com/gorilla/websocket"
   packages = ["."]
+  pruneopts = "UT"
   revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
   version = "v1.2.0"
 
 [[projects]]
-  name = "github.com/nlopes/slack"
-  packages = ["."]
-  revision = "0db1d5eae1116bf7c8ed96c6749acfbf4daaec3e"
-  version = "v0.3.0"
-
-[[projects]]
   branch = "master"
+  digest = "1:7f8c9d1be45840e7f920cce4fc352c2bba291c961a462251ded6d06dd3274685"
   name = "github.com/notnil/chess"
   packages = ["."]
+  pruneopts = "UT"
   revision = "d0248440c2c6602df91c111b98c11b9837de82ba"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
+  digest = "1:c793f09249d173143b3b42e0cd0ee21a85cd976dfacc486a025aeb208c1403a8"
   name = "golang.org/x/image"
-  packages = ["draw","font","font/basicfont","font/plan9font","math/f64","math/fixed"]
+  packages = [
+    "draw",
+    "font",
+    "font/basicfont",
+    "font/plan9font",
+    "math/f64",
+    "math/fixed",
+  ]
+  pruneopts = "UT"
   revision = "c73c2afc3b812cdd6385de5a50616511c4a3d458"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7acae00e563454d0bb3095ff080bf9091a499bea469038cd113497d1e24b6da6"
+  input-imports = [
+    "github.com/caarlos0/env",
+    "github.com/cjsaylor/chessimage",
+    "github.com/cjsaylor/slack",
+    "github.com/cjsaylor/slack/slackevents",
+    "github.com/notnil/chess",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
