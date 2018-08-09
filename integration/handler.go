@@ -22,15 +22,10 @@ type SlackHandler struct {
 	SigningKey        string
 	Hostname          string
 	SlackClient       *slack.Client
+	Storage           game.GameStorage
 }
 
 const requestVersion = "v0"
-
-var games map[string]*game.Game
-
-func init() {
-	games = make(map[string]*game.Game)
-}
 
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -62,14 +57,23 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.AppMentionEvent:
-			gm := games[ev.ThreadTimeStamp]
-			if gm == nil {
-				gm := game.NewGame(game.Player{
+			var gameID string
+			if ev.ThreadTimeStamp == "" {
+				gameID = ev.TimeStamp
+			} else {
+				gameID = ev.ThreadTimeStamp
+			}
+			gm, err := s.Storage.RetrieveGame(gameID)
+			if err != nil {
+				log.Println(err)
+				gm = game.NewGame(game.Player{
 					ID: ev.User,
 				}, game.Player{
 					ID: ev.User,
 				})
-				games[ev.TimeStamp] = gm
+				s.Storage.StoreGame(gameID, gm)
+			}
+			if !gm.Started() {
 				s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
 					ThreadTimestamp: ev.TimeStamp,
 					Attachments: []slack.Attachment{
@@ -79,10 +83,12 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						},
 					},
 				})
+				gm.Start()
 				break
 			}
 			input := strings.Split(ev.Text, " ")
-			if ev.User != gm.Players[gm.Turn()].ID {
+			player := gm.TurnPlayer()
+			if ev.User != player.ID {
 				log.Println("ignoreing player input as it is not their turn")
 			}
 			move, err := gm.Move(input[1])
@@ -92,7 +98,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				})
 				break
 			}
-			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
+			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
 				ThreadTimestamp: ev.TimeStamp,
 				Attachments: []slack.Attachment{
 					slack.Attachment{
@@ -104,7 +110,6 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							url.QueryEscape(fmt.Sprintf("%v %v", move.S1().String(), move.S2().String()))),
 					},
 				},
-				LinkNames: 1,
 			})
 		}
 	}
