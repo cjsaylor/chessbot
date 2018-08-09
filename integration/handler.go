@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/slack"
@@ -25,6 +25,19 @@ type SlackHandler struct {
 }
 
 const requestVersion = "v0"
+
+type command uint8
+
+const (
+	unknownCommand command = iota
+	challengeCommand
+	moveCommand
+)
+
+var commandPatterns = map[command]*regexp.Regexp{
+	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$"),
+	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8]).*$"),
+}
 
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -62,53 +75,78 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			} else {
 				gameID = ev.ThreadTimeStamp
 			}
-			gm, err := s.Storage.RetrieveGame(gameID)
-			if err != nil {
-				log.Println(err)
-				gm = game.NewGame(game.Player{
-					ID: ev.User,
-				}, game.Player{
-					ID: ev.User,
-				})
-				s.Storage.StoreGame(gameID, gm)
+			handler := unknownCommand
+			var captures []string
+			for command, regex := range commandPatterns {
+				results := regex.FindStringSubmatch(ev.Text)
+				if len(results) > 0 {
+					handler = command
+					captures = results[1:]
+				}
 			}
-			if !gm.Started() {
-				s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
-					ThreadTimestamp: ev.TimeStamp,
-					Attachments: []slack.Attachment{
-						slack.Attachment{
-							Text:     "Opening",
-							ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
-						},
-					},
-				})
-				gm.Start()
-				break
+			switch handler {
+			case unknownCommand:
+				s.sendError(gameID, ev.Channel, "Does not compute. :(")
+			case moveCommand:
+				s.handleMoveCommand(gameID, captures[0], ev)
+			case challengeCommand:
+				s.sendError(gameID, ev.Channel, "Challenge not implemented yet, stay tuned...")
 			}
-			input := strings.Split(ev.Text, " ")
-			player := gm.TurnPlayer()
-			if ev.User != player.ID {
-				log.Println("ignoreing player input as it is not their turn")
-			}
-			move, err := gm.Move(input[1])
-			if err != nil {
-				s.SlackClient.PostMessage(ev.Channel, err.Error(), slack.PostMessageParameters{
-					ThreadTimestamp: ev.TimeStamp,
-				})
-				break
-			}
-			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
-				ThreadTimestamp: ev.TimeStamp,
-				Attachments: []slack.Attachment{
-					slack.Attachment{
-						Text:     move.String(),
-						ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
-					},
-				},
-			})
 		}
 	}
+}
 
+// Currently this function initiates a game if not found
+// This will not be the case once the challenge command is implemented
+// Initiates a "self" game
+func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackevents.AppMentionEvent) {
+	gm, err := s.Storage.RetrieveGame(gameID)
+	if err != nil {
+		log.Println(err)
+		gm = game.NewGame(game.Player{
+			ID: ev.User,
+		}, game.Player{
+			ID: ev.User,
+		})
+		s.Storage.StoreGame(gameID, gm)
+	}
+	if !gm.Started() {
+		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.Players[gm.Turn()].ID, gm.Turn()), slack.PostMessageParameters{
+			ThreadTimestamp: ev.TimeStamp,
+			Attachments: []slack.Attachment{
+				slack.Attachment{
+					Text:     "Opening",
+					ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
+				},
+			},
+		})
+		gm.Start()
+		return
+	}
+	player := gm.TurnPlayer()
+	if ev.User != player.ID {
+		log.Println("ignoreing player input as it is not their turn")
+	}
+	chessMove, err := gm.Move(move)
+	if err != nil {
+		s.sendError(gameID, ev.Channel, err.Error())
+		return
+	}
+	s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
+		ThreadTimestamp: ev.TimeStamp,
+		Attachments: []slack.Attachment{
+			slack.Attachment{
+				Text:     chessMove.String(),
+				ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
+			},
+		},
+	})
+}
+
+func (s SlackHandler) sendError(gameID string, channel string, text string) {
+	s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
+		ThreadTimestamp: gameID,
+	})
 }
 
 // Not using this for now since the challenge request doesn't appear to send it
