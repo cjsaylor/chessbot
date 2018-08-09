@@ -15,6 +15,7 @@ import (
 	"github.com/cjsaylor/slack/slackevents"
 )
 
+// SlackActionHandler will respond to all Slack integration component requests
 type SlackActionHandler struct {
 	BotToken          string
 	VerificationToken string
@@ -34,7 +35,9 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body := buf.String()
 
 	payload, _ := url.QueryUnescape(body[8:])
-	event, err := slackevents.ParseActionEvent(payload, slackevents.OptionVerifyToken(&slackevents.TokenComparator{s.VerificationToken}))
+	event, err := slackevents.ParseActionEvent(payload, slackevents.OptionVerifyToken(&slackevents.TokenComparator{
+		VerificationToken: s.VerificationToken,
+	}))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err)

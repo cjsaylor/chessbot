@@ -1,3 +1,4 @@
+// Package rendering is responsible for rendering game boards by ID in their current state
 package rendering
 
 import (
@@ -20,10 +21,12 @@ var noCacheHeaders = map[string]string{
 	"X-Accel-Expires": "0",
 }
 
+// BoardRenderHandler handles all image requests from Slack
 type BoardRenderHandler struct {
 	GameStorage game.GameStorage
 }
 
+// ServeHTTP is a request handler
 func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

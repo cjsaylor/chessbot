@@ -1,3 +1,4 @@
+// Package game contains all the logic for creating and manipulating a game
 package game
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/notnil/chess"
 )
 
+// Challenge represents a challenge between two players
 type Challenge struct {
 	ChallengerID string
 	ChallengedID string
@@ -21,10 +23,12 @@ const (
 	Black Color = "Black"
 )
 
+// Player represents a human Chess player
 type Player struct {
 	ID string
 }
 
+// Game is the state of a game (active or not)
 type Game struct {
 	game        *chess.Game
 	Players     map[Color]Player
@@ -33,6 +37,7 @@ type Game struct {
 	checkedTile *chess.Square
 }
 
+// NewGame will create a new game with typical starting positions
 func NewGame(players ...Player) *Game {
 	gm := &Game{
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
@@ -52,6 +57,7 @@ func attachPlayers(game *Game, players ...Player) {
 	game.Players[Black] = randomOrder[1]
 }
 
+// NewGameFromFEN will create a new game with a given FEN starting position
 func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
 	gameState, err := chess.FEN(fen)
 	if err != nil {
@@ -65,10 +71,12 @@ func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
 	return game, nil
 }
 
+// TurnPlayer returns which player should move next
 func (g *Game) TurnPlayer() Player {
 	return g.Players[g.Turn()]
 }
 
+// Turn returns which color should move next
 func (g *Game) Turn() Color {
 	switch g.game.Position().Turn() {
 	case chess.White:
@@ -80,26 +88,32 @@ func (g *Game) Turn() Color {
 	}
 }
 
+// FEN serializer
 func (g *Game) FEN() string {
 	return g.game.FEN()
 }
 
+// PGN serializer
 func (g *Game) PGN() string {
 	return g.game.String()
 }
 
+// Outcome determines the outcome of the game (or no outcome)
 func (g *Game) Outcome() chess.Outcome {
 	return g.game.Outcome()
 }
 
+// ResultText will show the outcome of the game in textual format
 func (g *Game) ResultText() string {
 	return fmt.Sprintf("Game completed. %s by %s.", g.Outcome(), g.game.Method())
 }
 
+// LastMove returns the last move done of the game
 func (g *Game) LastMove() *chess.Move {
 	return g.lastMove
 }
 
+// Move a Chess piece based on standard algabreic notation (d2d4, etc)
 func (g *Game) Move(san string) (*chess.Move, error) {
 	err := g.game.MoveStr(san)
 	if err != nil {
@@ -111,18 +125,22 @@ func (g *Game) Move(san string) (*chess.Move, error) {
 	return g.lastMove, nil
 }
 
+// Start indicates the game has been started
 func (g *Game) Start() {
 	g.started = true
 }
 
+// Started determines if the game has been started
 func (g *Game) Started() bool {
 	return g.started
 }
 
+// ValidMoves returns a list of all moves available to the current player's turn
 func (g *Game) ValidMoves() []*chess.Move {
 	return g.game.ValidMoves()
 }
 
+// String representation of the current game state (draws an ascii board)
 func (g *Game) String() string {
 	return g.game.Position().Board().Draw()
 }

@@ -1,3 +1,4 @@
+// Package integration is for integrating the chess game engine into slack callbacks
 package integration
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/notnil/chess"
 )
 
+// SlackHandler will respond to all Slack event callback subscriptions
 type SlackHandler struct {
 	BotToken          string
 	VerificationToken string
@@ -49,7 +51,9 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	body := buf.String()
 
-	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{s.VerificationToken}))
+	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{
+		VerificationToken: s.VerificationToken,
+	}))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err)
