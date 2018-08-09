@@ -8,6 +8,7 @@ import (
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessimage"
+	"github.com/notnil/chess"
 )
 
 var epoch = time.Unix(0, 0).Format(time.RFC1123)
@@ -46,6 +47,14 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			From: from,
 			To:   to,
 		})
+		if game.LastMove().HasTag(chess.Check) {
+			// If in checkmate, there won't be a valid move. Figure out a different way to highlight in that case
+			moves := game.ValidMoves()
+			if len(moves) > 0 {
+				tile, _ := chessimage.TileFromAN(moves[0].S1().String())
+				board.SetCheckTile(tile)
+			}
+		}
 	}
 	for k, v := range noCacheHeaders {
 		w.Header().Set(k, v)
