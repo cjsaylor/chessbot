@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"log"
 )
 
 type MemoryStore struct {
@@ -18,16 +17,16 @@ func NewMemoryStore() *MemoryStore {
 	return &store
 }
 
-func (m *MemoryStore) RetrieveGame(id string) (*Game, error) {
-	gm, ok := m.games[id]
+func (m *MemoryStore) RetrieveGame(ID string) (*Game, error) {
+	gm, ok := m.games[ID]
 	if !ok {
-		return nil, fmt.Errorf("Game by %v not found", id)
+		return nil, fmt.Errorf("Game by %v not found", ID)
 	}
 	return gm, nil
 }
 
-func (m *MemoryStore) StoreGame(id string, game *Game) error {
-	m.games[id] = game
+func (m *MemoryStore) StoreGame(ID string, game *Game) error {
+	m.games[ID] = game
 	return nil
 }
 
@@ -42,6 +41,11 @@ func (m *MemoryStore) RetrieveChallenge(challengerID string, challengedID string
 func (m *MemoryStore) StoreChallenge(c *Challenge) error {
 	key := c.ChallengerID + c.ChallengedID
 	m.challenges[key] = c
-	log.Printf("[memory store] Saving challenge game %v\n", c.GameID)
+	return nil
+}
+
+func (m *MemoryStore) RemoveChallenge(challengerID string, challengedID string) error {
+	key := challengerID + challengedID
+	delete(m.challenges, key)
 	return nil
 }
