@@ -12,7 +12,14 @@ This is a Slack bot that allows players in a channel to challenge each other to 
 go run cmd/web/web.go
 ```
 
-> See `Configuration` for all environment vars
+## Configuration
+
+| Environment Variable | Default | Description
+| --- | --- | ---
+| PORT | `8080` | Port that the web server will listen
+| HOSTNAME | `localhost:8080` | Used for generating links to render the game board state images
+| SLACKBOTTOKEN | N/A | The app bot's oauth token. This can be retrieved from the slack app basic info screen
+| SLACKVERIFICATIONTOKEN | N/A | (deprecated) This is used to verify `POST`s to `/slack` and `/slack/action` originate from slack
 
 ## Endpoints
 
@@ -27,6 +34,16 @@ POST /slack
 ```
 
 All slack event subscription callbacks flow through this.
+
+* This is used for all typed commands mentioning `@ChessBot` in the channel.
+
+```
+POST /slack/action
+```
+
+All slack interactive component callbacks flow through this.
+
+* This is used for accepting/rejecting challenges.
 
 ## Testing the Chess Engine
 
