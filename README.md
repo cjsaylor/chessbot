@@ -49,7 +49,6 @@ Note the chess board is rendered backwords (white = black) :(
 2♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 
-{player1}
 player1's turn (White)
 
 > d2d4
