@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,23 +44,25 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 		return
 	}
+	if s.SlackClient == nil {
+		s.SlackClient = slack.New(s.BotToken)
+	}
 	results := regexp.MustCompile("^<@([\\w|\\d]+).*$").FindStringSubmatch(event.OriginalMessage.Text)
 	challenge, err := s.ChallengeStorage.RetrieveChallenge(results[1], event.User.Id)
 	if err != nil {
 		log.Println(err)
+		s.sendResponse(w, event.OriginalMessage, "Challenge automatically declined. We couldn't find it in our system.")
 		return
 	}
 	if event.Actions[0].Value != "accept" {
-		s.SlackClient.PostMessage(challenge.ChallengedID, "Challenge declined by player.", slack.PostMessageParameters{
+		s.SlackClient.PostMessage(challenge.ChannelID, "Challenge declined by player.", slack.PostMessageParameters{
 			ThreadTimestamp: challenge.GameID,
 		})
+		s.sendResponse(w, event.OriginalMessage, "Declined.")
 		if err := s.ChallengeStorage.RemoveChallenge(challenge.ChallengerID, challenge.ChallengedID); err != nil {
 			log.Printf("Failed to remove challenge %v: %v\n", challenge, err)
 		}
 		return
-	}
-	if s.SlackClient == nil {
-		s.SlackClient = slack.New(s.BotToken)
 	}
 	gameID := challenge.GameID
 	gm := game.NewGame(game.Player{
@@ -78,6 +81,21 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
+	s.sendResponse(w, event.OriginalMessage, ":ok: Game begun!")
+}
+
+func (s SlackActionHandler) sendResponse(w http.ResponseWriter, original slack.Message, text string) {
+	original.Attachments[0].Actions = []slack.AttachmentAction{}
+	original.Attachments[0].Fields = []slack.AttachmentField{
+		{
+			Title: text,
+			Value: "",
+			Short: false,
+		},
+	}
+	w.Header().Add("Content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&original)
 }
 
 // Not using this for now since the challenge request doesn't appear to send it
