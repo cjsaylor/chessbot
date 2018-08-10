@@ -4,6 +4,7 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 
 	"github.com/notnil/chess"
 )
@@ -68,6 +69,21 @@ func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
 		started: true,
 	}
 	attachPlayers(game, players...)
+	return game, nil
+}
+
+func NewGameFromPGN(pgn string, white Player, black Player) (*Game, error) {
+	reader := strings.NewReader(pgn)
+	gameState, err := chess.PGN(reader)
+	if err != nil {
+		return &Game{}, err
+	}
+	game := &Game{
+		game: chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
+	}
+	game.Players = make(map[Color]Player)
+	game.Players[White] = white
+	game.Players[Black] = black
 	return game, nil
 }
 
