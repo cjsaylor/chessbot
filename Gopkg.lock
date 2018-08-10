@@ -64,6 +64,14 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:3cafc6a5a1b8269605d9df4c6956d43d8011fc57f266ca6b9d04da6c09dee548"
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
+
+[[projects]]
   branch = "master"
   digest = "1:7f8c9d1be45840e7f920cce4fc352c2bba291c961a462251ded6d06dd3274685"
   name = "github.com/notnil/chess"
@@ -102,6 +110,7 @@
     "github.com/cjsaylor/chessimage",
     "github.com/cjsaylor/slack",
     "github.com/cjsaylor/slack/slackevents",
+    "github.com/mattn/go-sqlite3",
     "github.com/notnil/chess",
   ]
   solver-name = "gps-cdcl"
