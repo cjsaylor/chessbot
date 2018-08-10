@@ -122,6 +122,10 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		s.sendError(gameID, ev.Channel, err.Error())
 		return
 	}
+	if err := s.GameStorage.StoreGame(gameID, gm); err != nil {
+		s.sendError(gameID, ev.Channel, err.Error())
+		return
+	}
 	boardAttachment := slack.Attachment{
 		Text:     chessMove.String(),
 		ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
