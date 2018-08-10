@@ -110,7 +110,11 @@ func (g *Game) ResultText() string {
 
 // LastMove returns the last move done of the game
 func (g *Game) LastMove() *chess.Move {
-	return g.lastMove
+	moves := g.game.Moves()
+	if len(moves) == 0 {
+		return nil
+	}
+	return moves[len(moves)-1]
 }
 
 // Move a Chess piece based on standard algabreic notation (d2d4, etc)
@@ -119,10 +123,8 @@ func (g *Game) Move(san string) (*chess.Move, error) {
 	if err != nil {
 		return nil, err
 	}
-	moves := g.game.Moves()
 	g.started = true
-	g.lastMove = moves[len(moves)-1]
-	return g.lastMove, nil
+	return g.LastMove(), nil
 }
 
 // Start indicates the game has been started
