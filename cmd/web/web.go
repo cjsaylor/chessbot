@@ -11,34 +11,41 @@ import (
 	"github.com/cjsaylor/chessbot/rendering"
 )
 
-var memoryStore *game.MemoryStore
-
-func init() {
-	memoryStore = game.NewMemoryStore()
-	// @todo implement a store that is persistent
-}
-
 func main() {
 	config, err := config.ParseConfiguration()
 	if err != nil {
 		log.Fatal(err)
 	}
+	var gameStorage game.GameStorage
+	var challengeStorage game.ChallengeStorage
+	if config.SqlitePath != "" {
+		sqlStore, err := game.NewSqliteStore(config.SqlitePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		gameStorage = sqlStore
+		challengeStorage = sqlStore
+	} else {
+		memoryStore := game.NewMemoryStore()
+		gameStorage = memoryStore
+		challengeStorage = memoryStore
+	}
 	http.Handle("/board", rendering.BoardRenderHandler{
-		GameStorage: memoryStore,
+		GameStorage: gameStorage,
 	})
 	http.Handle("/slack", integration.SlackHandler{
 		BotToken:          config.SlackBotToken,
 		VerificationToken: config.SlackVerificationToken,
 		Hostname:          config.Hostname,
-		GameStorage:       memoryStore,
-		ChallengeStorage:  memoryStore,
+		GameStorage:       gameStorage,
+		ChallengeStorage:  challengeStorage,
 	})
 	http.Handle("/slack/action", integration.SlackActionHandler{
 		BotToken:          config.SlackBotToken,
 		VerificationToken: config.SlackVerificationToken,
 		Hostname:          config.Hostname,
-		GameStorage:       memoryStore,
-		ChallengeStorage:  memoryStore,
+		GameStorage:       gameStorage,
+		ChallengeStorage:  challengeStorage,
 	})
 	log.Printf("Listening on port %v\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Port), nil))

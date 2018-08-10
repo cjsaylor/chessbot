@@ -7,6 +7,7 @@ import "github.com/caarlos0/env"
 type Configuration struct {
 	Port                   int    `env:"PORT" envDefault:"8080"`
 	Hostname               string `env:"HOSTNAME" envDefault:"localhost:8080"`
+	SqlitePath             string `env:"SQLITEPATH"`
 	SlackBotToken          string `env:"SLACKBOTTOKEN"`
 	SlackVerificationToken string `env:"SLACKVERIFICATIONTOKEN"`
 }

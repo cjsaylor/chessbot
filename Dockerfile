@@ -13,7 +13,9 @@ WORKDIR /app
 COPY --from=builder /go/src/github.com/cjsaylor/chessbot/assets assets
 COPY --from=builder /go/src/github.com/cjsaylor/chessbot/web web
 RUN chmod -R 444 assets/*
+RUN mkdir data && chown -R appuser data
 USER appuser
 EXPOSE 8080
+VOLUME [ "/app/data" ]
 
 CMD ["./web"]
