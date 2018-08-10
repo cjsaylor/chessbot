@@ -8,6 +8,8 @@ services:
     env_file: .env
     networks:
       - public-nw
+    volumes:
+      - /var/local/chessbot:/app/data
 
 networks:
   public-nw:
