@@ -28,10 +28,10 @@ go run cmd/web/web.go
 ## Endpoints
 
 ```
-GET /board?game_id=
+GET /board?fen=&signature=&from=&to=&check=
 ```
 
-Renders the game board based on the state of a game by ID (slack `thread_ts`)
+Renders the game board based on the state of a game by FEN.
 
 ```
 POST /slack
