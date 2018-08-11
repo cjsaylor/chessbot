@@ -82,6 +82,9 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	s.sendResponse(w, event.OriginalMessage, ":ok: Game begun!")
+	if err := s.ChallengeStorage.RemoveChallenge(challenge.ChallengerID, challenge.ChallengedID); err != nil {
+		log.Printf("Failed to remove challenge %v: %v\n", challenge, err)
+	}
 }
 
 func (s SlackActionHandler) sendResponse(w http.ResponseWriter, original slack.Message, text string) {
