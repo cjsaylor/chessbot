@@ -12,6 +12,7 @@ import (
 	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
+	"github.com/cjsaylor/chessbot/rendering"
 	"github.com/cjsaylor/slack"
 	"github.com/cjsaylor/slack/slackevents"
 )
@@ -25,6 +26,7 @@ type SlackActionHandler struct {
 	SlackClient       *slack.Client
 	GameStorage       game.GameStorage
 	ChallengeStorage  game.ChallengeStorage
+	LinkRenderer      rendering.RenderLink
 }
 
 func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -72,12 +74,13 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 	s.GameStorage.StoreGame(gameID, gm)
 	gm.Start()
+	link, _ := s.LinkRenderer.CreateLink(gameID, gm)
 	s.SlackClient.PostMessage(challenge.ChannelID, fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), slack.PostMessageParameters{
 		ThreadTimestamp: gameID,
 		Attachments: []slack.Attachment{
 			slack.Attachment{
 				Text:     fmt.Sprintf("<@%v> has accepted. Here is the opening.", event.User.Id),
-				ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, event.ActionTimestamp),
+				ImageURL: link.String(),
 			},
 		},
 	})

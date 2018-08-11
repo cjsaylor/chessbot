@@ -48,6 +48,7 @@ func main() {
 		Hostname:          config.Hostname,
 		GameStorage:       gameStorage,
 		ChallengeStorage:  challengeStorage,
+		LinkRenderer:      renderLink,
 	})
 	log.Printf("Listening on port %v\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Port), nil))
