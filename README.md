@@ -20,6 +20,8 @@ go run cmd/web/web.go
 | --- | --- | ---
 | PORT | `8080` | Port that the web server will listen
 | HOSTNAME | `localhost:8080` | Used for generating links to render the game board state images
+| SIGNINGKEY | N/A | Key used to sign the signature for board rendering URLs
+| SQLITEPATH | N/A | Path to a sqlite3 database file. If not included, falls back to memory store.
 | SLACKBOTTOKEN | N/A | The app bot's oauth token. This can be retrieved from the slack app basic info screen
 | SLACKVERIFICATIONTOKEN | N/A | (deprecated) This is used to verify `POST`s to `/slack` and `/slack/action` originate from slack
 

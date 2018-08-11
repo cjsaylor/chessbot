@@ -30,8 +30,9 @@ func main() {
 		gameStorage = memoryStore
 		challengeStorage = memoryStore
 	}
+	renderLink := rendering.NewRenderLink(config.Hostname, config.SigningKey)
 	http.Handle("/board", rendering.BoardRenderHandler{
-		GameStorage: gameStorage,
+		LinkRenderer: renderLink,
 	})
 	http.Handle("/slack", integration.SlackHandler{
 		BotToken:          config.SlackBotToken,
@@ -39,6 +40,7 @@ func main() {
 		Hostname:          config.Hostname,
 		GameStorage:       gameStorage,
 		ChallengeStorage:  challengeStorage,
+		LinkRenderer:      renderLink,
 	})
 	http.Handle("/slack/action", integration.SlackActionHandler{
 		BotToken:          config.SlackBotToken,

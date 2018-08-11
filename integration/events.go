@@ -12,6 +12,7 @@ import (
 	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
+	"github.com/cjsaylor/chessbot/rendering"
 	"github.com/cjsaylor/slack"
 	"github.com/cjsaylor/slack/slackevents"
 	"github.com/notnil/chess"
@@ -26,6 +27,7 @@ type SlackHandler struct {
 	SlackClient       *slack.Client
 	GameStorage       game.GameStorage
 	ChallengeStorage  game.ChallengeStorage
+	LinkRenderer      rendering.RenderLink
 }
 
 const requestVersion = "v0"
@@ -126,9 +128,10 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		s.sendError(gameID, ev.Channel, err.Error())
 		return
 	}
+	link, _ := s.LinkRenderer.CreateLink(gameID, gm)
 	boardAttachment := slack.Attachment{
 		Text:     chessMove.String(),
-		ImageURL: fmt.Sprintf("%v/board?game_id=%v&ts=%v", s.Hostname, gameID, ev.EventTimeStamp),
+		ImageURL: link.String(),
 	}
 	if outcome := gm.Outcome(); outcome != chess.NoOutcome {
 		fenAttachment := slack.Attachment{
