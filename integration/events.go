@@ -20,11 +20,11 @@ import (
 
 // SlackHandler will respond to all Slack event callback subscriptions
 type SlackHandler struct {
-	BotToken          string
 	VerificationToken string
 	SigningKey        string
 	Hostname          string
 	SlackClient       *slack.Client
+	AuthStorage       AuthStorage
 	GameStorage       game.GameStorage
 	ChallengeStorage  game.ChallengeStorage
 	LinkRenderer      rendering.RenderLink
@@ -72,7 +72,11 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(r.Challenge))
 	} else if event.Type == slackevents.CallbackEvent {
 		if s.SlackClient == nil {
-			s.SlackClient = slack.New(s.BotToken)
+			botToken, err := s.AuthStorage.GetAuthToken(event.TeamID)
+			if err != nil {
+				log.Panicln(err)
+			}
+			s.SlackClient = slack.New(botToken)
 		}
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
@@ -209,9 +213,12 @@ func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser strin
 }
 
 func (s SlackHandler) sendError(gameID string, channel string, text string) {
-	s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
+	_, _, err := s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
 		ThreadTimestamp: gameID,
 	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Not using this for now since the challenge request doesn't appear to send it

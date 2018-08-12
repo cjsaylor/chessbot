@@ -2,8 +2,6 @@
 
 [![GoDoc](https://godoc.org/github.com/cjsaylor/chessbot?status.svg)](https://godoc.org/github.com/cjsaylor/chessbot)
 
-> Currently under development
-
 This is a Slack bot that allows players in a channel to challenge each other to a game of Chess.
 
 ![](./doc/screenshot.png)
@@ -11,7 +9,8 @@ This is a Slack bot that allows players in a channel to challenge each other to 
 ## Quick Start
 
 ```
-go run cmd/web/web.go
+cp .env.sample .env
+export $(cat .env | xargs) && go run cmd/web/web.go
 ```
 
 ## Configuration
@@ -22,8 +21,16 @@ go run cmd/web/web.go
 | HOSTNAME | `localhost:8080` | Used for generating links to render the game board state images
 | SIGNINGKEY | N/A | Key used to sign the signature for board rendering URLs
 | SQLITEPATH | N/A | Path to a sqlite3 database file. If not included, falls back to memory store.
-| SLACKBOTTOKEN | N/A | The app bot's oauth token. This can be retrieved from the slack app basic info screen
+| SLACKAPPID | N/A | The app ID that operates the slack bot.
+| SLACKCLIENTID | N/A | Slack app client ID
+| SLACKCLIENTSECRET | N/A | Slack app client secret
 | SLACKVERIFICATIONTOKEN | N/A | (deprecated) This is used to verify `POST`s to `/slack` and `/slack/action` originate from slack
+
+## Installing
+
+```
+https://slack.com/oauth/authorize?client_id=<client_id_here>&scope=bot
+```
 
 ## Endpoints
 
@@ -48,6 +55,12 @@ POST /slack/action
 All slack interactive component callbacks flow through this.
 
 * This is used for accepting/rejecting challenges.
+
+```
+GET /slack/oauth
+```
+
+Slack app installation requests flow through here. A bot token is generated as part of the key exchange and stored keyed by team ID.
 
 ## Testing the Chess Engine
 

@@ -1,7 +1,9 @@
 // Package config is used to configure the application
 package config
 
-import "github.com/caarlos0/env"
+import (
+	"github.com/caarlos0/env"
+)
 
 // Configuration holds all application configuration
 type Configuration struct {
@@ -9,7 +11,9 @@ type Configuration struct {
 	Hostname               string `env:"HOSTNAME" envDefault:"localhost:8080"`
 	SigningKey             string `env:"SIGNINGKEY"`
 	SqlitePath             string `env:"SQLITEPATH"`
-	SlackBotToken          string `env:"SLACKBOTTOKEN"`
+	SlackAppID             string `env:"SLACKAPPID"`
+	SlackClientID          string `env:"SLACKCLIENTID"`
+	SlackClientSecret      string `env:"SLACKCLIENTSECRET"`
 	SlackVerificationToken string `env:"SLACKVERIFICATIONTOKEN"`
 }
 

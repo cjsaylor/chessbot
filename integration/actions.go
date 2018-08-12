@@ -19,11 +19,11 @@ import (
 
 // SlackActionHandler will respond to all Slack integration component requests
 type SlackActionHandler struct {
-	BotToken          string
 	VerificationToken string
 	SigningKey        string
 	Hostname          string
 	SlackClient       *slack.Client
+	AuthStorage       AuthStorage
 	GameStorage       game.GameStorage
 	ChallengeStorage  game.ChallengeStorage
 	LinkRenderer      rendering.RenderLink
@@ -47,7 +47,11 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.SlackClient == nil {
-		s.SlackClient = slack.New(s.BotToken)
+		botToken, err := s.AuthStorage.GetAuthToken(event.Team.Id)
+		if err != nil {
+			log.Panicln(err)
+		}
+		s.SlackClient = slack.New(botToken)
 	}
 	results := regexp.MustCompile("^<@([\\w|\\d]+).*$").FindStringSubmatch(event.OriginalMessage.Text)
 	challenge, err := s.ChallengeStorage.RetrieveChallenge(results[1], event.User.Id)
@@ -91,6 +95,7 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s SlackActionHandler) sendResponse(w http.ResponseWriter, original slack.Message, text string) {
+	original.ReplaceOriginal = true
 	original.Attachments[0].Actions = []slack.AttachmentAction{}
 	original.Attachments[0].Fields = []slack.AttachmentField{
 		{
