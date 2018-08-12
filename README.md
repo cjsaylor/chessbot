@@ -6,6 +6,10 @@ This is a Slack bot that allows players in a channel to challenge each other to 
 
 ![](./doc/screenshot.png)
 
+## Hosted Version
+
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?client_id=4813578032.414983030853&scope=bot)
+
 ## Quick Start
 
 ```
