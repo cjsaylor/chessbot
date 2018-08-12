@@ -18,15 +18,15 @@
   revision = "e42de691c093690b073a71c108b4ec2f20c2a298"
 
 [[projects]]
-  digest = "1:ebb217fd78f12218d875b56fb7aee0d732b9c7fd4836cb46130a195fc127f336"
+  digest = "1:fef5771b18f112c251fe897974ed68624970acbefdf5df45f6ebba6798effeaa"
   name = "github.com/cjsaylor/slack"
   packages = [
     ".",
     "slackevents",
   ]
   pruneopts = "UT"
-  revision = "bc36d194ec3baf016e9effe5004a4173efde2a32"
-  version = "v0.4.0"
+  revision = "c6713a45ca21194a7ff0370ef5594a759b405105"
+  version = "v0.4.1"
 
 [[projects]]
   branch = "master"
