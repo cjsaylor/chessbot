@@ -11,10 +11,12 @@
 
 ![](./event_subscriptions.png)
 
-## Setup custom actions
+## Setup interactive components
 
-![](./action_accept_challenge.png)
+![](./interactive_components.png)
 
-## Retrieve Tokens
+## Setup OAuth2 redirect URLs
 
-* You'll need the bot oath token and verification token from the "basic details" area.
+![](./oauth_redirect.png)
+
+The only scope necessary is bots as we only listen to and respond to app mentions.
