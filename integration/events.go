@@ -169,7 +169,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 			// @todo persist record to some incremental storage (redis, etc)
 		}
 	} else {
-		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", player.ID, gm.Turn()), slack.PostMessageParameters{
+		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), slack.PostMessageParameters{
 			ThreadTimestamp: ev.TimeStamp,
 			Attachments:     []slack.Attachment{boardAttachment},
 		})
