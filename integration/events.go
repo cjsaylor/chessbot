@@ -38,11 +38,13 @@ const (
 	unknownCommand command = iota
 	challengeCommand
 	moveCommand
+	helpCommand
 )
 
 var commandPatterns = map[command]*regexp.Regexp{
 	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$"),
 	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8]).*$"),
+	helpCommand:      regexp.MustCompile(".*help.*"),
 }
 
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +105,8 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.handleMoveCommand(gameID, captures[0], ev)
 			case challengeCommand:
 				s.handleChallengeCommand(gameID, captures[0], ev)
+			case helpCommand:
+				s.handleHelpCommand(gameID, ev)
 			}
 		}
 	}
@@ -207,6 +211,27 @@ func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser strin
 						Value: "reject",
 					},
 				},
+			},
+		},
+	})
+}
+
+func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentionEvent) {
+	text := "You can use ChessBot to play Chess with other teammates."
+	s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
+		ThreadTimestamp: gameID,
+		Attachments: []slack.Attachment{
+			slack.Attachment{
+				Pretext:    "To start a new game, challenge another teammate by mentioning them.",
+				Title:      "Start a new game",
+				Text:       "Example: `@ChessBot challenge @<target_player>`",
+				MarkdownIn: []string{"text"},
+			},
+			slack.Attachment{
+				Pretext:    "To move a piece during a game, put in the square of the piece you want to move and the destination.",
+				Title:      "Move a piece",
+				Text:       "Example: `@ChessBot e2e4`",
+				MarkdownIn: []string{"text"},
 			},
 		},
 	})
