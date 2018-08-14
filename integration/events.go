@@ -120,7 +120,8 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 	}
 	player := gm.TurnPlayer()
 	if ev.User != player.ID {
-		log.Println("ignoreing player input as it is not their turn")
+		s.sendError(gameID, ev.Channel, "Please wait for your turn.")
+		return
 	}
 	chessMove, err := gm.Move(move)
 	if err != nil {
