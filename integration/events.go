@@ -116,12 +116,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 	gm, err := s.GameStorage.RetrieveGame(gameID)
 	if err != nil {
 		log.Println(err)
-		gm = game.NewGame(game.Player{
-			ID: ev.User,
-		}, game.Player{
-			ID: ev.User,
-		})
-		s.GameStorage.StoreGame(gameID, gm)
+		return
 	}
 	player := gm.TurnPlayer()
 	if ev.User != player.ID {
