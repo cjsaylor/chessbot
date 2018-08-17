@@ -1,3 +1,4 @@
 /web
 .env
 chessbot.db
+docker-compose.yml

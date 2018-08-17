@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  app:
+    image: .
+    env_file: .env
+    volumes:
+      - db-data:/app/db
+
+volumes:
+  db-data:

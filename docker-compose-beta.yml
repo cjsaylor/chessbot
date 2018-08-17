@@ -9,9 +9,14 @@ services:
     networks:
       - public-nw
     volumes:
+      # Leaving the old while transitioning to a data volume
       - /var/local/chessbot:/app/data
+      - db-data:/app/db
 
 networks:
   public-nw:
     external:
       name: public-nw
+
+volumes:
+  db-data:
