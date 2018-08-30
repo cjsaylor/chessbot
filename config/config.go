@@ -9,6 +9,7 @@ import (
 type Configuration struct {
 	Port                   int    `env:"PORT" envDefault:"8080"`
 	Hostname               string `env:"HOSTNAME" envDefault:"localhost:8080"`
+	GameCacheSize          uint   `env:"GAMECACHESIZE" envDefault:"10000"`
 	SigningKey             string `env:"SIGNINGKEY"`
 	SqlitePath             string `env:"SQLITEPATH"`
 	SlackAppID             string `env:"SLACKAPPID"`

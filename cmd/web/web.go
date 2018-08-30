@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/cjsaylor/chessbot/config"
 	"github.com/cjsaylor/chessbot/game"
@@ -20,13 +21,16 @@ func main() {
 	var challengeStorage game.ChallengeStorage
 	var authStorage integration.AuthStorage
 	if config.SqlitePath != "" {
-		gameSqlStore, err := game.NewSqliteStore(config.SqlitePath)
+		sqlStore, err := game.NewSqliteStore(config.SqlitePath)
 		if err != nil {
 			log.Fatal(err)
 		}
+		lruSqlStore, err := game.NewSqliteLRUStore(sqlStore, config.GameCacheSize, func() {
+			os.Exit(1)
+		})
 		authSqlStore, err := integration.NewSqliteStore(config.SqlitePath)
-		gameStorage = gameSqlStore
-		challengeStorage = gameSqlStore
+		gameStorage = lruSqlStore
+		challengeStorage = sqlStore
 		authStorage = authSqlStore
 	} else {
 		memoryStore := game.NewMemoryStore()
