@@ -19,7 +19,7 @@ pipeline:
       status: success
   deploy:
     image: appleboy/drone-ssh
-    host: box2.smashlists.com
+    host: box2.chris-saylor.com
     username: root
     volumes:
       - /root/drone/drone_rsa:/root/ssh/drone_rsa
