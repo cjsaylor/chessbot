@@ -12,7 +12,7 @@ const foolsMate = "rnbqkbnr/pppp1ppp/8/8/5P2/8/PPPPP2P/RNBQKBNR b KQkq - 03"
 
 func main() {
 	fmt.Println("Game REPL")
-	fmt.Println("Note the chess board is rendered backwords (white = black) :(")
+	fmt.Println("Note: piece colors may appear reversed on dark background terminals.")
 	initialState := ""
 	if len(os.Args) > 1 {
 		initialState = os.Args[1]
