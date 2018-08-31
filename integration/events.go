@@ -173,6 +173,12 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 }
 
 func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
+	if _, err := s.GameStorage.RetrieveGame(gameID); err == nil {
+		s.SlackClient.PostMessage(ev.Channel, "A game already exists in this thread. Try making a new thread.", slack.PostMessageParameters{
+			ThreadTimestamp: gameID,
+		})
+		return
+	}
 	_, _, channelID, err := s.SlackClient.OpenIMChannel(challengedUser)
 	if err != nil {
 		log.Printf("unable to challenge %v: %v", challengedUser, err)
