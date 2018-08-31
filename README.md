@@ -1,5 +1,6 @@
-# ChessBot [![](https://drone.chris-saylor.com/api/badges/cjsaylor/chessbot/status.svg)](https://drone.chris-saylor.com/cjsaylor/chessbot)
+# ChessBot
 
+[![](https://drone.chris-saylor.com/api/badges/cjsaylor/chessbot/status.svg)](https://drone.chris-saylor.com/cjsaylor/chessbot)
 [![GoDoc](https://godoc.org/github.com/cjsaylor/chessbot?status.svg)](https://godoc.org/github.com/cjsaylor/chessbot)
 
 This is a Slack bot that allows players in a channel to challenge each other to a game of Chess.
