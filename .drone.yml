@@ -8,3 +8,26 @@ pipeline:
     commands:
       - go get -u golang.org/x/tools/cmd/cover
       - go test -cover $(go list ./... | grep -v /vendor/)
+  publish:
+    image: plugins/docker
+    repo: cjsaylor/chessbot
+    secrets: [ docker_username, docker_password ]
+    tag: [ latest ]
+    when:
+      branch: master
+      event: push
+      status: success
+  deploy:
+    image: appleboy/drone-ssh
+    host: box2.smashlists.com
+    username: root
+    volumes:
+      - /root/drone/drone_rsa:/root/ssh/drone_rsa
+    key_path: /root/ssh/drone_rsa
+    port: 22
+    script:
+      - cd /root/chessbot && bash deploy.sh
+    when:
+      branch: master
+      event: push
+      status: success
