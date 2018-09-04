@@ -18,11 +18,13 @@ func NewMemoryStore() *MemoryStore {
 	return &store
 }
 
+// StoreAuthToken stores the oauth token granted by slack user for a given team ID
 func (m *MemoryStore) StoreAuthToken(teamID string, oauthToken string) error {
 	m.authorizations[teamID] = oauthToken
 	return nil
 }
 
+// GetAuthToken retrieves an oauth token for use with slack given a team ID
 func (m *MemoryStore) GetAuthToken(teamID string) (string, error) {
 	token, ok := m.authorizations[teamID]
 	if !ok {

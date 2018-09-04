@@ -71,14 +71,14 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gameID := challenge.GameID
-	gm := game.NewGame(game.Player{
+	gm := game.NewGame(gameID, game.Player{
 		ID: event.User.Id,
 	}, game.Player{
 		ID: results[1],
 	})
 	s.GameStorage.StoreGame(gameID, gm)
 	gm.Start()
-	link, _ := s.LinkRenderer.CreateLink(gameID, gm)
+	link, _ := s.LinkRenderer.CreateLink(gm)
 	s.SlackClient.PostMessage(challenge.ChannelID, fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), slack.PostMessageParameters{
 		ThreadTimestamp: gameID,
 		Attachments: []slack.Attachment{

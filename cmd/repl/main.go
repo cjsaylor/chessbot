@@ -24,13 +24,13 @@ func main() {
 	}
 	if string(initialState) != "" {
 		var err error
-		gm, err = game.NewGameFromFEN(string(initialState), players...)
+		gm, err = game.NewGameFromFEN("1", string(initialState), players...)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	} else {
-		gm = game.NewGame(players...)
+		gm = game.NewGame("1", players...)
 
 	}
 	scanner := bufio.NewScanner(os.Stdin)
@@ -39,18 +39,22 @@ func main() {
 	fmt.Print("\n> ")
 	for scanner.Scan() {
 		input := scanner.Text()
-		if input == "fen" {
+		switch scanner.Text() {
+		case "fen":
 			fmt.Println(gm.FEN())
 			fmt.Print("\n> ")
 			continue
-		} else if input == "exit" {
+		case "resign":
+			gm.Resign(gm.TurnPlayer())
+		case "exit":
 			os.Exit(0)
-		}
-		_, err := gm.Move(input)
-		if err != nil {
-			fmt.Println(err)
-			fmt.Print("\n> ")
-			continue
+		default:
+			_, err := gm.Move(input)
+			if err != nil {
+				fmt.Println(err)
+				fmt.Print("\n> ")
+				continue
+			}
 		}
 		fmt.Println(gm)
 		if outcome := gm.Outcome(); outcome != "*" {

@@ -38,12 +38,14 @@ const (
 	unknownCommand command = iota
 	challengeCommand
 	moveCommand
+	resignCommand
 	helpCommand
 )
 
 var commandPatterns = map[command]*regexp.Regexp{
 	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$"),
 	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8]).*$"),
+	resignCommand:    regexp.MustCompile("^<@\\w|\\d]+> .*resign.*$"),
 	helpCommand:      regexp.MustCompile(".*help.*"),
 }
 
@@ -105,6 +107,8 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.handleMoveCommand(gameID, captures[0], ev)
 			case challengeCommand:
 				s.handleChallengeCommand(gameID, captures[0], ev)
+			case resignCommand:
+				s.handleResignCommand(gameID, ev)
 			case helpCommand:
 				s.handleHelpCommand(gameID, ev)
 			}
@@ -132,44 +136,40 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		s.sendError(gameID, ev.Channel, err.Error())
 		return
 	}
-	link, _ := s.LinkRenderer.CreateLink(gameID, gm)
+	link, _ := s.LinkRenderer.CreateLink(gm)
 	boardAttachment := slack.Attachment{
 		Text:     chessMove.String(),
 		ImageURL: link.String(),
 	}
 	if outcome := gm.Outcome(); outcome != chess.NoOutcome {
-		fenAttachment := slack.Attachment{
-			Title: "FEN",
-			Text:  gm.FEN(),
-		}
-		pgnAttachment := slack.Attachment{
-			Title: "PGN",
-			Text:  gm.PGN(),
-		}
-		if outcome == chess.Draw {
-			s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
-				ThreadTimestamp: ev.TimeStamp,
-				Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
-			})
-		} else {
-			var winningPlayer game.Player
-			if outcome == chess.WhiteWon {
-				winningPlayer = gm.Players[game.White]
-			} else {
-				winningPlayer = gm.Players[game.Black]
-			}
-			s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("Congratulations, <@%v>! %v", winningPlayer.ID, gm.ResultText()), slack.PostMessageParameters{
-				ThreadTimestamp: ev.TimeStamp,
-				Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
-			})
-			// @todo persist record to some incremental storage (redis, etc)
-		}
+		s.displayEndGame(gm, ev)
 	} else {
 		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), slack.PostMessageParameters{
 			ThreadTimestamp: ev.TimeStamp,
 			Attachments:     []slack.Attachment{boardAttachment},
 		})
 	}
+}
+
+func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEvent) {
+	fenAttachment := slack.Attachment{
+		Title: "FEN",
+		Text:  gm.FEN(),
+	}
+	pgnAttachment := slack.Attachment{
+		Title: "PGN",
+		Text:  gm.PGN(),
+	}
+	link, _ := s.LinkRenderer.CreateLink(gm)
+	boardAttachment := slack.Attachment{
+		Text:     gm.LastMove().String(),
+		ImageURL: link.String(),
+	}
+	s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
+		ThreadTimestamp: ev.TimeStamp,
+		Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
+	})
+	// @todo persist record to some incremental storage (redis, etc)
 }
 
 func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
@@ -218,6 +218,17 @@ func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser strin
 	})
 }
 
+func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMentionEvent) {
+	gm, err := s.GameStorage.RetrieveGame(gameID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	player, err := gm.PlayerByID(ev.User)
+	gm.Resign(*player)
+	s.displayEndGame(gm, ev)
+}
+
 func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentionEvent) {
 	text := "You can use ChessBot to play Chess with other teammates."
 	s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
@@ -233,6 +244,12 @@ func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentio
 				Pretext:    "To move a piece during a game, put in the square of the piece you want to move and the destination.",
 				Title:      "Move a piece",
 				Text:       "Example: `@ChessBot e2e4`",
+				MarkdownIn: []string{"text"},
+			},
+			slack.Attachment{
+				Pretext:    "To resign the game, mention the chess bot and say \"resign\"",
+				Title:      "Resignation",
+				Text:       "Example: `@ChessBot resign",
 				MarkdownIn: []string{"text"},
 			},
 		},

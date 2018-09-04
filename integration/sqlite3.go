@@ -38,6 +38,7 @@ func NewSqliteStore(path string) (*SqliteStore, error) {
 	return &store, nil
 }
 
+// StoreAuthToken stores the oauth token granted by slack user for a given team ID
 func (s *SqliteStore) StoreAuthToken(teamID string, oauthToken string) error {
 	stmt, _ := s.db.Prepare(`
 		insert into authorizations (id, token) values (?, ?)
@@ -48,6 +49,7 @@ func (s *SqliteStore) StoreAuthToken(teamID string, oauthToken string) error {
 	return err
 }
 
+// GetAuthToken retrieves an oauth token for use with slack given a team ID
 func (s *SqliteStore) GetAuthToken(teamID string) (string, error) {
 	stmt, _ := s.db.Prepare("select token from authorizations where id = ?")
 	defer stmt.Close()

@@ -2,6 +2,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -24,13 +25,20 @@ const (
 	Black Color = "Black"
 )
 
+var colorMap = map[Color]chess.Color{
+	White: chess.White,
+	Black: chess.Black,
+}
+
 // Player represents a human Chess player
 type Player struct {
-	ID string
+	ID    string
+	color Color
 }
 
 // Game is the state of a game (active or not)
 type Game struct {
+	ID          string
 	game        *chess.Game
 	Players     map[Color]Player
 	started     bool
@@ -39,7 +47,7 @@ type Game struct {
 }
 
 // NewGame will create a new game with typical starting positions
-func NewGame(players ...Player) *Game {
+func NewGame(ID string, players ...Player) *Game {
 	gm := &Game{
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
@@ -54,12 +62,14 @@ func attachPlayers(game *Game, players ...Player) {
 		randomOrder[v] = players[i]
 	}
 	game.Players = make(map[Color]Player)
+	randomOrder[0].color = White
 	game.Players[White] = randomOrder[0]
+	randomOrder[1].color = Black
 	game.Players[Black] = randomOrder[1]
 }
 
 // NewGameFromFEN will create a new game with a given FEN starting position
-func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
+func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 	gameState, err := chess.FEN(fen)
 	if err != nil {
 		return &Game{}, err
@@ -72,7 +82,7 @@ func NewGameFromFEN(fen string, players ...Player) (*Game, error) {
 	return game, nil
 }
 
-func NewGameFromPGN(pgn string, white Player, black Player) (*Game, error) {
+func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, error) {
 	reader := strings.NewReader(pgn)
 	gameState, err := chess.PGN(reader)
 	if err != nil {
@@ -85,6 +95,21 @@ func NewGameFromPGN(pgn string, white Player, black Player) (*Game, error) {
 	game.Players[White] = white
 	game.Players[Black] = black
 	return game, nil
+}
+
+// PlayerByID returns a reference to a player given their ID
+func (g *Game) PlayerByID(ID string) (*Player, error) {
+	for _, player := range g.Players {
+		if player.ID == ID {
+			return &player, nil
+		}
+	}
+	return nil, errors.New("player not found with given ID")
+}
+
+// Resign will resign a player from the game
+func (g *Game) Resign(resigner Player) {
+	g.game.Resign(colorMap[resigner.color])
 }
 
 // TurnPlayer returns which player should move next
@@ -121,7 +146,17 @@ func (g *Game) Outcome() chess.Outcome {
 
 // ResultText will show the outcome of the game in textual format
 func (g *Game) ResultText() string {
-	return fmt.Sprintf("Game completed. %s by %s.", g.Outcome(), g.game.Method())
+	outcome := g.Outcome()
+	if outcome == chess.Draw {
+		return fmt.Sprintf("Game completed. %s by %s.", g.Outcome(), g.game.Method())
+	}
+	var winningPlayer Player
+	if outcome == chess.WhiteWon {
+		winningPlayer = g.Players[White]
+	} else {
+		winningPlayer = g.Players[Black]
+	}
+	return fmt.Sprintf("Congratulations, <@%v>! %s by %s", winningPlayer.ID, g.Outcome(), g.game.Method())
 }
 
 // LastMove returns the last move done of the game

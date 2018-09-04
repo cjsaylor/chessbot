@@ -81,7 +81,7 @@ func (s *SqliteStore) RetrieveGame(ID string) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewGameFromPGN(pgn, Player{
+	return NewGameFromPGN(ID, pgn, Player{
 		ID: player1,
 	}, Player{
 		ID: player2,

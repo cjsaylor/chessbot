@@ -17,7 +17,7 @@ type RenderLink struct {
 }
 
 // CreateLink returns an externally accessible board URL at the current game state
-func (r RenderLink) CreateLink(gameID string, gm *game.Game) (*url.URL, error) {
+func (r RenderLink) CreateLink(gm *game.Game) (*url.URL, error) {
 	fen := gm.FEN()
 	sig := sha256.New()
 	sig.Write([]byte(fen + r.signingKey))
