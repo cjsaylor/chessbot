@@ -30,7 +30,7 @@ func TestGameSavesAndIsRetrievable(t *testing.T) {
 	}
 	for _, tt := range dbSet {
 		t.Run(tt.name, func(t *testing.T) {
-			gm := game.NewGame(game.Player{ID: "1"}, game.Player{ID: "2"})
+			gm := game.NewGame("1234", game.Player{ID: "1"}, game.Player{ID: "2"})
 			if err := tt.db.StoreGame("1234", gm); err != nil {
 				t.Error(err)
 			}
