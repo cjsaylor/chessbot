@@ -49,6 +49,11 @@ var commandPatterns = map[command]*regexp.Regexp{
 	helpCommand:      regexp.MustCompile(".*help.*"),
 }
 
+var colorToHex = map[game.Color]string{
+	game.Black: "#000000",
+	game.White: "#eeeeee",
+}
+
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -140,6 +145,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 	boardAttachment := slack.Attachment{
 		Text:     chessMove.String(),
 		ImageURL: link.String(),
+		Color:    colorToHex[gm.Turn()],
 	}
 	if outcome := gm.Outcome(); outcome != chess.NoOutcome {
 		s.displayEndGame(gm, ev)
