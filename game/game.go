@@ -49,6 +49,7 @@ type Game struct {
 // NewGame will create a new game with typical starting positions
 func NewGame(ID string, players ...Player) *Game {
 	gm := &Game{
+		ID:   ID,
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
 	attachPlayers(gm, players...)
@@ -75,6 +76,7 @@ func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 		return &Game{}, err
 	}
 	game := &Game{
+		ID:      ID,
 		game:    chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
 		started: true,
 	}
@@ -89,6 +91,7 @@ func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, e
 		return &Game{}, err
 	}
 	game := &Game{
+		ID:   ID,
 		game: chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
 	game.Players = make(map[Color]Player)
