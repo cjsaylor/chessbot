@@ -158,13 +158,10 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 }
 
 func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEvent) {
-	fenAttachment := slack.Attachment{
-		Title: "FEN",
-		Text:  gm.FEN(),
-	}
 	pgnAttachment := slack.Attachment{
-		Title: "PGN",
-		Text:  gm.PGN(),
+		Title:     "Analysis",
+		TitleLink: s.Hostname + "/analyze?game_id=" + gm.ID,
+		Text:      gm.Export(),
 	}
 	link, _ := s.LinkRenderer.CreateLink(gm)
 	boardAttachment := slack.Attachment{
@@ -173,7 +170,7 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 	}
 	s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
 		ThreadTimestamp: ev.TimeStamp,
-		Attachments:     []slack.Attachment{boardAttachment, fenAttachment, pgnAttachment},
+		Attachments:     []slack.Attachment{boardAttachment, pgnAttachment},
 	})
 	// @todo persist record to some incremental storage (redis, etc)
 }
