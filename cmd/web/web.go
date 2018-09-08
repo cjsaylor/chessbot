@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/cjsaylor/chessbot/analysis"
 	"github.com/cjsaylor/chessbot/config"
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessbot/integration"
@@ -38,6 +39,7 @@ func main() {
 	http.Handle("/board", rendering.BoardRenderHandler{
 		LinkRenderer: renderLink,
 	})
+	http.Handle("/analyze", analysis.NewHTTPHandler(gameStorage, analysis.LichessAnalyzer{}))
 	http.Handle("/slack", integration.SlackHandler{
 		VerificationToken: config.SlackVerificationToken,
 		Hostname:          config.Hostname,
