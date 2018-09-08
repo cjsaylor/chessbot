@@ -142,6 +142,18 @@ func (g *Game) PGN() string {
 	return g.game.String()
 }
 
+// Export a game in PGN format
+func (g *Game) Export() string {
+	gm := chess.NewGame()
+	gm.AddTagPair("Site", "Slack ChessBot match")
+	gm.AddTagPair("White", g.Players[White].ID)
+	gm.AddTagPair("Black", g.Players[Black].ID)
+	for _, move := range g.game.Moves() {
+		gm.Move(move)
+	}
+	return gm.String()
+}
+
 // Outcome determines the outcome of the game (or no outcome)
 func (g *Game) Outcome() chess.Outcome {
 	return g.game.Outcome()
