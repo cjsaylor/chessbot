@@ -67,6 +67,12 @@ GET /slack/oauth
 
 Slack app installation requests flow through here. A bot token is generated as part of the key exchange and stored keyed by team ID.
 
+```
+GET /analyze?game_id=
+```
+
+* This endpoint is used to generate an analysis of a game. It will redirect the user upon successful import to an analysis provider.
+
 ## Testing the Chess Engine
 
 ```
@@ -76,7 +82,8 @@ go run cmd/repl/main.go
 ```
 λ go run cmd/repl/main.go
 Game REPL
-Note the chess board is rendered backwords (white = black) :(
+Note: piece colors may appear reversed on dark background terminals.
+Game ID: jcghocxkvgakyefcjgsd
 
  A B C D E F G H
 8♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
@@ -88,7 +95,7 @@ Note the chess board is rendered backwords (white = black) :(
 2♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 
-player1's turn (White)
+player2's turn (White)
 
 > d2d4
 
@@ -102,7 +109,14 @@ player1's turn (White)
 2♙ ♙ ♙ - ♙ ♙ ♙ ♙
 1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 
-player2's turn (Black)
+player1's turn (Black)
+
+> export
+[Site "Slack ChessBot match"]
+[White "player2"]
+[Black "player1"]
+
+1.d4 *
 
 > fen
 rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1

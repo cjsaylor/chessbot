@@ -1,3 +1,4 @@
+// Package analysis allows for games to be analyzed by a third party analysis service
 package analysis
 
 import (
