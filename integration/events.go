@@ -238,22 +238,9 @@ func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentio
 		ThreadTimestamp: gameID,
 		Attachments: []slack.Attachment{
 			slack.Attachment{
-				Pretext:    "To start a new game, challenge another teammate by mentioning them.",
-				Title:      "Start a new game",
-				Text:       "Example: `@ChessBot challenge @<target_player>`",
-				MarkdownIn: []string{"text"},
-			},
-			slack.Attachment{
-				Pretext:    "To move a piece during a game, put in the square of the piece you want to move and the destination.",
-				Title:      "Move a piece",
-				Text:       "Example: `@ChessBot e2e4`",
-				MarkdownIn: []string{"text"},
-			},
-			slack.Attachment{
-				Pretext:    "To resign the game, mention the chess bot and say \"resign\"",
-				Title:      "Resignation",
-				Text:       "Example: `@ChessBot resign",
-				MarkdownIn: []string{"text"},
+				Pretext:   "For help visit our website.",
+				Title:     "ChessBot Help",
+				TitleLink: "https://www.chris-saylor.com/chessbot",
 			},
 		},
 	})
