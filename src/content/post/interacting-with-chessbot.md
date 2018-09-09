@@ -1,7 +1,6 @@
 ---
 title: "Interacting with ChessBot"
 date: 2018-09-08T22:14:44-04:00
-draft: true
 ---
 
 ### Challenge a fellow colleague

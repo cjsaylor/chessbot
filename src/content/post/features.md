@@ -1,7 +1,6 @@
 ---
 title: "Features"
 date: 2018-09-08T22:15:05-04:00
-draft: true
 ---
 
 * Play Chess completely within Slack.
