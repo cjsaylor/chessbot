@@ -26,7 +26,7 @@
       <pubDate>Sat, 08 Sep 2018 22:14:44 -0400</pubDate>
       
       <guid>https://www.chris-saylor.com/chessbot/post/interacting-with-chessbot/</guid>
-      <description>Challenge a fellow colleague   Go to a channel where the ChessBot and issue a challenge:  
+      <description>Challenge a fellow colleague   Go to a channel where the ChessBot has joined and issue a challenge:  
  The player will receive the challenge message from ChessBot:  
  When accepted, it will start the game as a thread to the original challenge message:  
  Issuing Moves  ChessBot can &amp;ldquo;hear&amp;rdquo; moves as grid positions. The board is labeled 1-9 and a-h, so to move the queen pawn up 2 squares, the move position would be d2d4.</description>

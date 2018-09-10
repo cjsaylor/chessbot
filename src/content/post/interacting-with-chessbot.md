@@ -5,7 +5,7 @@ date: 2018-09-08T22:14:44-04:00
 
 ### Challenge a fellow colleague
 
-> * Go to a channel where the `ChessBot` and issue a challenge:
+> * Go to a channel where the `ChessBot` has joined and issue a challenge:
 >
 [<img src="/chessbot/img/help1.png" class="img-responsive">](/chessbot/img/help1.png)
 >
