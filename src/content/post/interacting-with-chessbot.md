@@ -9,6 +9,8 @@ date: 2018-09-08T22:14:44-04:00
 >
 [<img src="/chessbot/img/help1.png" class="img-responsive">](/chessbot/img/help1.png)
 >
+> Be sure to mention both the `@chessbot` and the player you are wanting to challenge.
+>
 > * The player will receive the challenge message from `ChessBot`:
 >
 [<img src="/chessbot/img/help2.png" class="img-responsive">](/chessbot/img/help2.png)
