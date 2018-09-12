@@ -37,6 +37,11 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	body := buf.String()
 
+	if len(body) < 8 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	payload, _ := url.QueryUnescape(body[8:])
 	event, err := slackevents.ParseActionEvent(payload, slackevents.OptionVerifyToken(&slackevents.TokenComparator{
 		VerificationToken: s.VerificationToken,
