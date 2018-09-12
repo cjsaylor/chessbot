@@ -233,7 +233,15 @@ func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMent
 func getHelpAttachments() []slack.Attachment {
 	return []slack.Attachment{
 		slack.Attachment{
-			Pretext:   "For help visit our website.",
+			Title: "Challenge Player",
+			Text:  "To challenge a player, mention @chessbot and say \"challenge @player_to_challenge\".",
+		},
+		slack.Attachment{
+			Title: "Making a move",
+			Text:  "To make a move playing, mention @chessbot and say \"d2d4\" which are the grid position of the piece you wish to move and the destination.",
+		},
+		slack.Attachment{
+			Pretext:   "For additional help visit our website.",
 			Title:     "ChessBot Help",
 			TitleLink: "https://www.chris-saylor.com/chessbot",
 		},
