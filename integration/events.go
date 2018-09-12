@@ -107,7 +107,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			switch handler {
 			case unknownCommand:
-				s.sendError(gameID, ev.Channel, "Does not compute. :(")
+				s.sendErrorWithHelp(gameID, ev.Channel, "Sorry, I don't understand what you said.")
 			case moveCommand:
 				s.handleMoveCommand(gameID, captures[0], ev)
 			case challengeCommand:
@@ -177,15 +177,13 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 
 func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
 	if _, err := s.GameStorage.RetrieveGame(gameID); err == nil {
-		s.SlackClient.PostMessage(ev.Channel, "A game already exists in this thread. Try making a new thread.", slack.PostMessageParameters{
-			ThreadTimestamp: gameID,
-		})
+		s.sendErrorWithHelp(gameID, ev.Channel, "A game already exists in this thread. Try making a new thread.")
 		return
 	}
 	_, _, channelID, err := s.SlackClient.OpenIMChannel(challengedUser)
 	if err != nil {
 		log.Printf("unable to challenge %v: %v", challengedUser, err)
-		s.sendError(gameID, ev.Channel, "Unable to challenge that player. :(")
+		s.sendError(gameID, ev.Channel, "Unable to challenge that player.")
 		return
 	}
 	challenge := &game.Challenge{
@@ -232,23 +230,43 @@ func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMent
 	s.displayEndGame(gm, ev)
 }
 
+func getHelpAttachments() []slack.Attachment {
+	return []slack.Attachment{
+		slack.Attachment{
+			Pretext:   "For help visit our website.",
+			Title:     "ChessBot Help",
+			TitleLink: "https://www.chris-saylor.com/chessbot",
+		},
+	}
+}
+
 func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentionEvent) {
 	text := "You can use ChessBot to play Chess with other teammates."
+	if ev.ThreadTimeStamp == "" || ev.TimeStamp == ev.ThreadTimeStamp {
+		s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
+			Attachments: getHelpAttachments(),
+		})
+		return
+	}
 	s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
 		ThreadTimestamp: gameID,
-		Attachments: []slack.Attachment{
-			slack.Attachment{
-				Pretext:   "For help visit our website.",
-				Title:     "ChessBot Help",
-				TitleLink: "https://www.chris-saylor.com/chessbot",
-			},
-		},
+		Attachments:     getHelpAttachments(),
 	})
 }
 
 func (s SlackHandler) sendError(gameID string, channel string, text string) {
 	_, _, err := s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
 		ThreadTimestamp: gameID,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (s SlackHandler) sendErrorWithHelp(gameID string, channel string, text string) {
+	_, _, err := s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
+		ThreadTimestamp: gameID,
+		Attachments:     getHelpAttachments(),
 	})
 	if err != nil {
 		log.Println(err)
