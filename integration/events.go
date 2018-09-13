@@ -89,6 +89,10 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
+		case *slackevents.AppHomeEvent:
+			s.SlackClient.PostMessage(ev.Channel, "I can only offer you this help.", slack.PostMessageParameters{
+				Attachments: getHelpAttachments(),
+			})
 		case *slackevents.AppMentionEvent:
 			var gameID string
 			if ev.ThreadTimeStamp == "" {
