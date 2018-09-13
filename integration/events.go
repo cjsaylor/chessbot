@@ -42,8 +42,10 @@ const (
 	helpCommand
 )
 
+var subChallengePattern = regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$")
+
 var commandPatterns = map[command]*regexp.Regexp{
-	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$"),
+	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge.*$"),
 	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8]).*$"),
 	resignCommand:    regexp.MustCompile("^<@[\\w|\\d]+>.*resign.*$"),
 	helpCommand:      regexp.MustCompile(".*help.*"),
@@ -115,7 +117,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			case moveCommand:
 				s.handleMoveCommand(gameID, captures[0], ev)
 			case challengeCommand:
-				s.handleChallengeCommand(gameID, captures[0], ev)
+				s.handleChallengeCommand(gameID, ev)
 			case resignCommand:
 				s.handleResignCommand(gameID, ev)
 			case helpCommand:
@@ -179,7 +181,13 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 	// @todo persist record to some incremental storage (redis, etc)
 }
 
-func (s SlackHandler) handleChallengeCommand(gameID string, challengedUser string, ev *slackevents.AppMentionEvent) {
+func (s SlackHandler) handleChallengeCommand(gameID string, ev *slackevents.AppMentionEvent) {
+	results := subChallengePattern.FindStringSubmatch(ev.Text)
+	if len(results) < 2 {
+		s.sendErrorWithHelp(gameID, ev.Channel, "Please mention a valid user in order to issue a challenge.")
+		return
+	}
+	challengedUser := results[1]
 	if _, err := s.GameStorage.RetrieveGame(gameID); err == nil {
 		s.sendErrorWithHelp(gameID, ev.Channel, "A game already exists in this thread. Try making a new thread.")
 		return
