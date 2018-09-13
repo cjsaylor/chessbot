@@ -21,6 +21,17 @@ type AppMentionEvent struct {
 	EventTimeStamp  json.Number `json:"event_ts"`
 }
 
+// AppHomeEvent is an inner EventsAPI subscribably event.
+type AppHomeEvent struct {
+	Type           string      `json:"type"`
+	User           string      `json:"user"`
+	Text           string      `json:"text"`
+	TimeStamp      string      `json:"ts"`
+	Channel        string      `json:"channel"`
+	ChannelType    string      `json:"channel_type"`
+	EventTimeStamp json.Number `json:"event_ts"`
+}
+
 // AppUninstalledEvent Your Slack app was uninstalled.
 type AppUninstalledEvent struct {
 	Type string `json:"type"`
@@ -159,6 +170,8 @@ func (e MessageEvent) IsEdited() bool {
 const (
 	// AppMention is an Events API subscribable event
 	AppMention = "app_mention"
+	// AppHome is an Events API subscribably event
+	AppHome = "app_home"
 	// AppUninstalled Your Slack app was uninstalled.
 	AppUninstalled = "app_uninstalled"
 	// GridMigrationFinished An enterprise grid migration has finished on this workspace.
@@ -176,6 +189,7 @@ const (
 // target for the matching event type.
 var EventsAPIInnerEventMapping = map[string]interface{}{
 	AppMention:            AppMentionEvent{},
+	AppHome:               AppHomeEvent{},
 	AppUninstalled:        AppUninstalledEvent{},
 	GridMigrationFinished: GridMigrationFinishedEvent{},
 	GridMigrationStarted:  GridMigrationStartedEvent{},

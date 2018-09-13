@@ -18,15 +18,15 @@
   revision = "e42de691c093690b073a71c108b4ec2f20c2a298"
 
 [[projects]]
-  digest = "1:fef5771b18f112c251fe897974ed68624970acbefdf5df45f6ebba6798effeaa"
+  digest = "1:b392779e77452024ec24111e00f389bb309d8047bfa45869544ac8728dfc2c21"
   name = "github.com/cjsaylor/slack"
   packages = [
     ".",
     "slackevents",
   ]
   pruneopts = "UT"
-  revision = "c6713a45ca21194a7ff0370ef5594a759b405105"
-  version = "v0.4.1"
+  revision = "d9cf1c3365d413bacd9aa8c47bc5b6cc11420a0b"
+  version = "v0.4.2"
 
 [[projects]]
   branch = "master"
@@ -56,12 +56,12 @@
   revision = "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4"
 
 [[projects]]
-  digest = "1:43dd08a10854b2056e615d1b1d22ac94559d822e1f8b6fcc92c1a1057e85188e"
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
   name = "github.com/gorilla/websocket"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
-  version = "v1.2.0"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:3cafc6a5a1b8269605d9df4c6956d43d8011fc57f266ca6b9d04da6c09dee548"
@@ -73,11 +73,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7f8c9d1be45840e7f920cce4fc352c2bba291c961a462251ded6d06dd3274685"
+  digest = "1:583690132d2ac2047321848b450ea3c9d7755715192f2bbd187553b0d566c316"
   name = "github.com/notnil/chess"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d0248440c2c6602df91c111b98c11b9837de82ba"
+  revision = "48f53c3c2e49df0585aa5c4d8b11200a124b793c"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
