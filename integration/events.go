@@ -235,6 +235,7 @@ func (s SlackHandler) handleChallengeCommand(gameID string, ev *slackevents.AppM
 			},
 		},
 	})
+	s.SlackClient.PostEphemeral(channelID, ev.User, slack.MsgOptionText("Challenge has been sent.", true))
 }
 
 func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMentionEvent) {
