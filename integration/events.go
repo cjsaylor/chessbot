@@ -92,8 +92,9 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.MessageEvent:
-			if ev.ChannelType == "im" && ev.BotID == "" {
-				s.SlackClient.PostMessage(ev.Channel, "I can only offer you this.", slack.PostMessageParameters{
+			regex := regexp.MustCompile(".*help.*")
+			if ev.ChannelType == "im" && ev.BotID == "" && regex.MatchString(ev.Text) {
+				s.SlackClient.PostMessage(ev.Channel, "You can use ChessBot to play Chess with other teammates.", slack.PostMessageParameters{
 					Attachments: getHelpAttachments(),
 				})
 			}
