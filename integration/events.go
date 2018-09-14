@@ -91,13 +91,9 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
-		case *slackevents.AppHomeEvent:
-			s.SlackClient.PostMessage(ev.Channel, "I can only offer you this help.", slack.PostMessageParameters{
-				Attachments: getHelpAttachments(),
-			})
 		case *slackevents.MessageEvent:
-			if ev.ChannelType == "im" {
-				s.SlackClient.PostMessage(ev.Channel, "I can only offer you this help.", slack.PostMessageParameters{
+			if ev.ChannelType == "im" && ev.BotID == "" {
+				s.SlackClient.PostMessage(ev.Channel, "I can only offer you this.", slack.PostMessageParameters{
 					Attachments: getHelpAttachments(),
 				})
 			}
