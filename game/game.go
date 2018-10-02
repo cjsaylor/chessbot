@@ -144,14 +144,14 @@ func (g *Game) PGN() string {
 
 // Export a game in PGN format
 func (g *Game) Export() string {
-	gm := chess.NewGame()
-	gm.AddTagPair("Site", "Slack ChessBot match")
-	gm.AddTagPair("White", g.Players[White].ID)
-	gm.AddTagPair("Black", g.Players[Black].ID)
-	for _, move := range g.game.Moves() {
-		gm.Move(move)
-	}
-	return gm.String()
+	regularNotation := chess.UseNotation(chess.AlgebraicNotation{})
+	longNotation := chess.UseNotation(chess.LongAlgebraicNotation{})
+	defer longNotation(g.game)
+	g.game.AddTagPair("Site", "Slack ChessBot match")
+	g.game.AddTagPair("White", g.Players[White].ID)
+	g.game.AddTagPair("Black", g.Players[Black].ID)
+	regularNotation(g.game)
+	return g.game.String()
 }
 
 // Outcome determines the outcome of the game (or no outcome)
