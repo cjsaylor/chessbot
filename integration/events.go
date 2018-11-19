@@ -46,7 +46,7 @@ var subChallengePattern = regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\
 
 var commandPatterns = map[command]*regexp.Regexp{
 	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge.*$"),
-	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8]).*$"),
+	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8][qnrb]?).*$"),
 	resignCommand:    regexp.MustCompile("^<@[\\w|\\d]+>.*resign.*$"),
 	helpCommand:      regexp.MustCompile(".*help.*"),
 }
