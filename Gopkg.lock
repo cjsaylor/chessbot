@@ -73,11 +73,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:583690132d2ac2047321848b450ea3c9d7755715192f2bbd187553b0d566c316"
+  digest = "1:2e8a404ab0617d5c9faca71e5fd3fe0c9cd07e9ce34ab138d79deb85d3729cad"
   name = "github.com/notnil/chess"
   packages = ["."]
   pruneopts = "UT"
-  revision = "48f53c3c2e49df0585aa5c4d8b11200a124b793c"
+  revision = "ecbe3b133806c241c193a137ae062861d09c6754"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
