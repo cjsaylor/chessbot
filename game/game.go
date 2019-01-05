@@ -95,7 +95,9 @@ func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, e
 		game: chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
 	game.Players = make(map[Color]Player)
+	white.color = White
 	game.Players[White] = white
+	black.color = Black
 	game.Players[Black] = black
 	return game, nil
 }
@@ -208,6 +210,7 @@ func (g *Game) ValidMoves() []*chess.Move {
 	return g.game.ValidMoves()
 }
 
+// CheckedKing returns the square of a checked king if there is indeed a king in check.
 func (g *Game) CheckedKing() chess.Square {
 	squareMap := g.game.Position().Board().SquareMap()
 	lastMovePiece := squareMap[g.LastMove().S2()]
