@@ -50,12 +50,17 @@ func main() {
 		gm = game.NewGame(gameID, players...)
 
 	}
+	store.StoreGame(gameID, gm)
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println(gm)
 	fmt.Printf("%v's turn (%v)\n", gm.TurnPlayer().ID, gm.Turn())
 	fmt.Print("\n> ")
 	for scanner.Scan() {
 		input := scanner.Text()
+		gm, err := store.RetrieveGame(gameID)
+		if err != nil {
+			fmt.Println("Error reading in game: ", err)
+		}
 		switch scanner.Text() {
 		case "fen":
 			fmt.Println(gm.FEN())
@@ -67,6 +72,12 @@ func main() {
 			continue
 		case "resign":
 			gm.Resign(gm.TurnPlayer())
+		case "resign1":
+			player, err := gm.PlayerByID("player1")
+			if err != nil {
+				fmt.Println(err)
+			}
+			gm.Resign(*player)
 		case "exit":
 			os.Exit(0)
 		default:
