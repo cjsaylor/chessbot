@@ -37,6 +37,9 @@ func (r RenderLink) CreateLink(gm *game.Game) (*url.URL, error) {
 	q.Add("from", from)
 	q.Add("to", to)
 	q.Add("check", check)
+	if gm.Turn() == "Black" {
+		q.Add("inverted", "true")
+	}
 	u.RawQuery = q.Encode()
 	return u, nil
 }
