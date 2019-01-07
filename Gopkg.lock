@@ -11,11 +11,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0fc496ad11c334588d28477081602691f662b3da43d88feee99d913cf1330851"
+  digest = "1:48a6ee66ecb7c8c029414fdebb4fd40c3e662419f34973ba2906b000564a96de"
   name = "github.com/cjsaylor/chessimage"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e42de691c093690b073a71c108b4ec2f20c2a298"
+  revision = "8abad33612f43ee0b0137d51a129ad8c9dfd0ddf"
 
 [[projects]]
   digest = "1:b392779e77452024ec24111e00f389bb309d8047bfa45869544ac8728dfc2c21"

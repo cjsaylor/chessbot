@@ -73,6 +73,10 @@ renderer.Render(options)
 
 Specify the path of the image assets for the individual pieces. Feel free to use the assets packaged in this repo, but be aware they are under CC license.
 
+#### Inverted (`false`)
+
+Invert the board so that it displays correctly for the black player. By default the white player view is rendered. This is a boolean option.
+
 #### Resizer (`draw.CatmullRom`)
 
 Change the algorhythm for asset resizing. Depending on your performance requirements, you may need to use a faster (but more lossy) resizing method (like `draw.NearestNeighbor`).

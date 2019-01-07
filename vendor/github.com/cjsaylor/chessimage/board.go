@@ -9,8 +9,16 @@ func (s Tile) rank() int {
 	return int(int(s) / 8)
 }
 
+func (s Tile) rankInverted() int {
+	return 7 - s.rank()
+}
+
 func (s Tile) file() int {
 	return int(s) % 8
+}
+
+func (s Tile) fileInverted() int {
+	return 7 - s.file()
 }
 
 func tileFromRankFile(rank int, file int) Tile {

@@ -28,6 +28,8 @@ const (
 	defaultBoardSize   = 512
 	defaultPieceRatio  = 0.8
 	fileSymbols        = "abcdefgh"
+	fileSymbolsReverse = "hgfedcba"
+	rankSymbols        = "12345678"
 	rankSymbolsReverse = "87654321"
 )
 
@@ -50,6 +52,7 @@ type Options struct {
 	Resizer    draw.Scaler
 	BoardSize  int
 	PieceRatio float64
+	Inverted   bool
 }
 
 // Renderer is responsible for rendering the board, pieces, rank/file, and tile highlights
@@ -73,11 +76,13 @@ func NewRendererFromFEN(fen string) (*Renderer, error) {
 	}, nil
 }
 
+// SetCheckTile - Sets the check tile
 func (r *Renderer) SetCheckTile(tile Tile) {
 	// @todo validate it is within the range of proper tiles
 	r.checkTile = tile
 }
 
+// SetLastMove - Sets the last move
 func (r *Renderer) SetLastMove(lastMove LastMove) {
 	r.lastMove = &lastMove
 }
@@ -96,8 +101,8 @@ func (r *Renderer) Render(options Options) (image.Image, error) {
 	r.drawSize = calcDrawSize(options)
 	r.context = gg.NewContext(options.BoardSize, options.BoardSize)
 	r.drawBackground()
-	r.highlightCells()
-	r.drawCheckTile()
+	r.highlightCells(options)
+	r.drawCheckTile(options)
 	r.drawRankFile(options)
 	if err := r.drawBoard(options); err != nil {
 		return nil, err
@@ -120,34 +125,56 @@ func (r *Renderer) drawBackground() {
 	}
 }
 
-func (r *Renderer) highlightCells() {
+func (r *Renderer) highlightCells(o Options) {
 	if r.lastMove == nil {
 		return
 	}
+
+	var lastMoveFromRank, lastMoveToRank, lastMoveFromFile, lastMoveToFile int
+	if o.Inverted {
+		lastMoveFromRank = r.lastMove.From.rankInverted()
+		lastMoveFromFile = r.lastMove.From.fileInverted()
+		lastMoveToRank = r.lastMove.To.rankInverted()
+		lastMoveToFile = r.lastMove.To.fileInverted()
+	} else {
+		lastMoveFromRank = r.lastMove.From.rank()
+		lastMoveFromFile = r.lastMove.From.file()
+		lastMoveToRank = r.lastMove.To.rank()
+		lastMoveToFile = r.lastMove.To.file()
+	}
+
 	gridSize := r.drawSize.gridSize
 	r.context.DrawRectangle(
-		float64(r.lastMove.From.file()*gridSize),
-		float64(r.lastMove.From.rank()*gridSize),
+		float64(lastMoveFromFile*gridSize),
+		float64(lastMoveFromRank*gridSize),
 		float64(gridSize),
 		float64(gridSize))
 	r.context.SetRGB255(colorHighlight[0], colorHighlight[1], colorHighlight[2])
 	r.context.Fill()
 	r.context.DrawRectangle(
-		float64(r.lastMove.To.file()*gridSize),
-		float64(r.lastMove.To.rank()*gridSize),
+		float64(lastMoveToFile*gridSize),
+		float64(lastMoveToRank*gridSize),
 		float64(gridSize), float64(gridSize))
 	r.context.SetRGB255(colorHighlightDim[0], colorHighlightDim[1], colorHighlightDim[2])
 	r.context.Fill()
 }
 
-func (r *Renderer) drawCheckTile() {
+func (r *Renderer) drawCheckTile(o Options) {
 	if r.checkTile == NoTile {
 		return
 	}
+	var checkTileFile, checkTileRank int
+	if o.Inverted {
+		checkTileFile = r.checkTile.fileInverted()
+		checkTileRank = r.checkTile.rankInverted()
+	} else {
+		checkTileFile = r.checkTile.file()
+		checkTileRank = r.checkTile.rank()
+	}
 	gridSize := float64(r.drawSize.gridSize)
 	r.context.DrawRectangle(
-		float64(r.checkTile.file())*gridSize,
-		float64(r.checkTile.rank())*gridSize,
+		float64(checkTileFile)*gridSize,
+		float64(checkTileRank)*gridSize,
 		gridSize,
 		gridSize,
 	)
@@ -157,7 +184,7 @@ func (r *Renderer) drawCheckTile() {
 
 func (r *Renderer) drawBoard(o Options) error {
 	for _, position := range r.board {
-		if err := r.drawPiece(position, o.AssetPath, o.Resizer); err != nil {
+		if err := r.drawPiece(position, o.AssetPath, o.Resizer, o.Inverted); err != nil {
 			return err
 		}
 	}
@@ -165,6 +192,7 @@ func (r *Renderer) drawBoard(o Options) error {
 }
 
 func (r *Renderer) drawRankFile(o Options) error {
+	var symbols string
 	fontPath, err := findfont.Find("arial.ttf")
 	if err != nil {
 		return err
@@ -172,7 +200,13 @@ func (r *Renderer) drawRankFile(o Options) error {
 	if err := r.context.LoadFontFace(fontPath, 14); err != nil {
 		return err
 	}
-	for i, symbol := range fileSymbols {
+
+	if o.Inverted {
+		symbols = fileSymbolsReverse
+	} else {
+		symbols = fileSymbols
+	}
+	for i, symbol := range symbols {
 		var color []int
 		if i%2 == 0 {
 			color = colorLight
@@ -183,7 +217,12 @@ func (r *Renderer) drawRankFile(o Options) error {
 		r.context.DrawString(string(symbol), float64(r.drawSize.gridSize*i+2), float64(o.BoardSize-3))
 	}
 
-	for i, symbol := range rankSymbolsReverse {
+	if o.Inverted {
+		symbols = rankSymbols
+	} else {
+		symbols = rankSymbolsReverse
+	}
+	for i, symbol := range symbols {
 		var color []int
 		if i%2 == 0 {
 			color = colorLight
@@ -197,7 +236,7 @@ func (r *Renderer) drawRankFile(o Options) error {
 	return nil
 }
 
-func (r *Renderer) drawPiece(piece position, assetPath string, resizer draw.Scaler) error {
+func (r *Renderer) drawPiece(piece position, assetPath string, resizer draw.Scaler, inverted bool) error {
 	// Todo move this to runtime cache function
 	png, err := gg.LoadPNG(assetPath + pieceNames[string(piece.pieceSymbol)])
 	if err != nil {
@@ -209,7 +248,17 @@ func (r *Renderer) drawPiece(piece position, assetPath string, resizer draw.Scal
 	}
 	gridSize := r.drawSize.gridSize
 	pieceOffset := r.drawSize.pieceOffset
-	r.context.DrawImage(resized, gridSize*(piece.tile.rank())+pieceOffset, gridSize*(piece.tile.file())+pieceOffset)
+
+	var pieceRank, pieceFile int
+	if inverted {
+		pieceRank = piece.tile.rankInverted()
+		pieceFile = piece.tile.fileInverted()
+	} else {
+		pieceRank = piece.tile.rank()
+		pieceFile = piece.tile.file()
+	}
+
+	r.context.DrawImage(resized, gridSize*(pieceRank)+pieceOffset, gridSize*(pieceFile)+pieceOffset)
 	return nil
 }
 
