@@ -242,10 +242,7 @@ func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMent
 		return
 	}
 	player, err := gm.PlayerByID(ev.User)
-	if err != nil {
-		s.sendError(gameID, ev.Channel, "I couldn't find you as part of this game.")
-		return
-	}
+
 	gm.Resign(*player)
 	s.displayEndGame(gm, ev)
 }
