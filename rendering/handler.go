@@ -48,7 +48,8 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		board.SetCheckTile(tCheck)
 	}
 
-	image, err := board.Render(chessimage.Options{AssetPath: "./assets/"})
+	inverted := query.Get("inverted") == "true"
+	image, err := board.Render(chessimage.Options{AssetPath: "./assets/", Inverted: inverted})
 	if err != nil {
 		log.Println(err)
 	}
