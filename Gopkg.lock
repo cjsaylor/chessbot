@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:e361cb646a33874cf6521b5c4e77c9208b4b58c7fd3893b8c87f61f49b19d991"
+  digest = "1:2f7daa1bfbcd83e7f15933f01dd8306fe9a9b9d509d574f39bba9b0a67605b05"
   name = "github.com/caarlos0/env"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1cddc31c48c56ecd700d873edb9fd5b6f5df922a"
-  version = "v3.3.0"
+  revision = "9a320ffe30f788798714d91e5735181030db014c"
+  version = "v4.0.0"
 
 [[projects]]
   branch = "master"

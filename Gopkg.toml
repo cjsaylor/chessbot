@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/caarlos0/env"
-  version = "3.3.0"
+  version = ">= 3.3.0, < 5.0.0"
 
 [[constraint]]
   branch = "master"
