@@ -2,9 +2,6 @@
 github.com/caarlos0/env
 # github.com/cjsaylor/chessimage v0.0.0-20190107020940-8abad33612f4
 github.com/cjsaylor/chessimage
-# github.com/cjsaylor/slack v0.4.2
-github.com/cjsaylor/slack
-github.com/cjsaylor/slack/slackevents
 # github.com/flopp/go-findfont v0.0.0-20180308170802-e788239e52bc
 github.com/flopp/go-findfont
 # github.com/fogleman/gg v1.1.0
@@ -16,6 +13,10 @@ github.com/golang/freetype/truetype
 github.com/gorilla/websocket
 # github.com/mattn/go-sqlite3 v1.9.0
 github.com/mattn/go-sqlite3
+# github.com/nlopes/slack v0.5.0
+github.com/nlopes/slack
+github.com/nlopes/slack/slackevents
+github.com/nlopes/slack/slackutilsx
 # github.com/notnil/chess v0.0.0-20181214160432-429595102215
 github.com/notnil/chess
 # github.com/pkg/errors v0.8.0
