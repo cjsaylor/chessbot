@@ -41,20 +41,20 @@ func main() {
 	})
 	http.Handle("/analyze", analysis.NewHTTPHandler(gameStorage, analysis.LichessAnalyzer{}))
 	http.Handle("/slack", integration.SlackHandler{
-		VerificationToken: config.SlackVerificationToken,
-		Hostname:          config.Hostname,
-		AuthStorage:       authStorage,
-		GameStorage:       gameStorage,
-		ChallengeStorage:  challengeStorage,
-		LinkRenderer:      renderLink,
+		SigningKey:       config.SlackSigningKey,
+		Hostname:         config.Hostname,
+		AuthStorage:      authStorage,
+		GameStorage:      gameStorage,
+		ChallengeStorage: challengeStorage,
+		LinkRenderer:     renderLink,
 	})
 	http.Handle("/slack/action", integration.SlackActionHandler{
-		VerificationToken: config.SlackVerificationToken,
-		Hostname:          config.Hostname,
-		AuthStorage:       authStorage,
-		GameStorage:       gameStorage,
-		ChallengeStorage:  challengeStorage,
-		LinkRenderer:      renderLink,
+		SigningKey:       config.SlackSigningKey,
+		Hostname:         config.Hostname,
+		AuthStorage:      authStorage,
+		GameStorage:      gameStorage,
+		ChallengeStorage: challengeStorage,
+		LinkRenderer:     renderLink,
 	})
 	http.Handle("/slack/oauth", integration.SlackOauthHandler{
 		SlackClientID:     config.SlackClientID,

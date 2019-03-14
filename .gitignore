@@ -1,4 +1,5 @@
 /web
+/cmd/web/debug
 .env
 chessbot.db
 docker-compose.yml

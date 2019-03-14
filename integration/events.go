@@ -3,8 +3,6 @@ package integration
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,14 +18,13 @@ import (
 
 // SlackHandler will respond to all Slack event callback subscriptions
 type SlackHandler struct {
-	VerificationToken string
-	SigningKey        string
-	Hostname          string
-	SlackClient       *slack.Client
-	AuthStorage       AuthStorage
-	GameStorage       game.GameStorage
-	ChallengeStorage  game.ChallengeStorage
-	LinkRenderer      rendering.RenderLink
+	SigningKey       string
+	Hostname         string
+	SlackClient      *slack.Client
+	AuthStorage      AuthStorage
+	GameStorage      game.GameStorage
+	ChallengeStorage game.ChallengeStorage
+	LinkRenderer     rendering.RenderLink
 }
 
 const requestVersion = "v0"
@@ -59,14 +56,25 @@ var colorToHex = map[game.Color]string{
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	body := buf.String()
 
-	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{
-		VerificationToken: s.VerificationToken,
-	}))
+	secretsVerifier, err := slack.NewSecretsVerifier(r.Header, s.SigningKey)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	secretsVerifier.Write([]byte(body))
+	if err := secretsVerifier.Ensure(); err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionNoVerifyToken())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err)
@@ -306,16 +314,4 @@ func (s SlackHandler) sendErrorWithHelp(gameID string, channel string, text stri
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-// Not using this for now since the challenge request doesn't appear to send it
-// Also we'd need to implement this in a form that slackevents.ParseEvent() can use for verification
-func (s SlackHandler) validateSignature(r *http.Request, body string) bool {
-	timestamp := r.Header.Get("X-Slack-Request-Timestamp")
-	requestSignature := r.Header.Get("X-Slack-Signature")
-	compiled := fmt.Sprintf("%v:%v:%v", requestVersion, timestamp, body)
-	mac := hmac.New(sha256.New, []byte(s.SigningKey))
-	mac.Write([]byte(compiled))
-	expectedSignature := mac.Sum(nil)
-	return hmac.Equal(expectedSignature, []byte(requestSignature))
 }

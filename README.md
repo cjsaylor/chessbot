@@ -33,7 +33,7 @@ export $(cat .env | xargs) && go run cmd/web/web.go
 | SLACKAPPID | N/A | The app ID that operates the slack bot.
 | SLACKCLIENTID | N/A | Slack app client ID
 | SLACKCLIENTSECRET | N/A | Slack app client secret
-| SLACKVERIFICATIONTOKEN | N/A | (deprecated) This is used to verify `POST`s to `/slack` and `/slack/action` originate from slack
+| SLACKSIGNINGKEY | N/A | Used to verify the request signature originates from slack
 
 ## Installing
 
