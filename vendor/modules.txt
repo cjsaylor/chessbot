@@ -1,0 +1,28 @@
+# github.com/caarlos0/env v3.3.0+incompatible
+github.com/caarlos0/env
+# github.com/cjsaylor/chessimage v0.0.0-20190107020940-8abad33612f4
+github.com/cjsaylor/chessimage
+# github.com/cjsaylor/slack v0.4.2
+github.com/cjsaylor/slack
+github.com/cjsaylor/slack/slackevents
+# github.com/flopp/go-findfont v0.0.0-20180308170802-e788239e52bc
+github.com/flopp/go-findfont
+# github.com/fogleman/gg v1.1.0
+github.com/fogleman/gg
+# github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+github.com/golang/freetype/raster
+github.com/golang/freetype/truetype
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
+# github.com/mattn/go-sqlite3 v1.9.0
+github.com/mattn/go-sqlite3
+# github.com/notnil/chess v0.0.0-20181214160432-429595102215
+github.com/notnil/chess
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
+# golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81
+golang.org/x/image/draw
+golang.org/x/image/font
+golang.org/x/image/font/basicfont
+golang.org/x/image/math/f64
+golang.org/x/image/math/fixed
