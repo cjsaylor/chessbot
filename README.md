@@ -11,6 +11,10 @@ This is a Slack bot that allows players in a channel to challenge each other to 
 
 [![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?client_id=4813578032.414983030853&scope=bot)
 
+## Requirements
+
+* Go `1.12` - Older versions will work, but `go mod` is being used to manage dependencies.
+
 ## Quick Start
 
 ```
