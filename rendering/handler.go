@@ -18,6 +18,7 @@ type BoardRenderHandler struct {
 func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 	query := r.URL.Query()
 	fen := query.Get("fen")
