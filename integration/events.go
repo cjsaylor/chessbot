@@ -3,8 +3,6 @@ package integration
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,21 +11,20 @@ import (
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessbot/rendering"
-	"github.com/cjsaylor/slack"
-	"github.com/cjsaylor/slack/slackevents"
+	"github.com/nlopes/slack"
+	"github.com/nlopes/slack/slackevents"
 	"github.com/notnil/chess"
 )
 
 // SlackHandler will respond to all Slack event callback subscriptions
 type SlackHandler struct {
-	VerificationToken string
-	SigningKey        string
-	Hostname          string
-	SlackClient       *slack.Client
-	AuthStorage       AuthStorage
-	GameStorage       game.GameStorage
-	ChallengeStorage  game.ChallengeStorage
-	LinkRenderer      rendering.RenderLink
+	SigningKey       string
+	Hostname         string
+	SlackClient      *slack.Client
+	AuthStorage      AuthStorage
+	GameStorage      game.GameStorage
+	ChallengeStorage game.ChallengeStorage
+	LinkRenderer     rendering.RenderLink
 }
 
 const requestVersion = "v0"
@@ -59,14 +56,25 @@ var colorToHex = map[game.Color]string{
 func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	body := buf.String()
 
-	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{
-		VerificationToken: s.VerificationToken,
-	}))
+	secretsVerifier, err := slack.NewSecretsVerifier(r.Header, s.SigningKey)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	secretsVerifier.Write([]byte(body))
+	if err := secretsVerifier.Ensure(); err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionNoVerifyToken())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err)
@@ -94,9 +102,10 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case *slackevents.MessageEvent:
 			regex := regexp.MustCompile(".*help.*")
 			if ev.ChannelType == "im" && ev.BotID == "" && regex.MatchString(ev.Text) {
-				s.SlackClient.PostMessage(ev.Channel, "You can use ChessBot to play Chess with other teammates.", slack.PostMessageParameters{
-					Attachments: getHelpAttachments(),
-				})
+				s.SlackClient.PostMessage(
+					ev.Channel,
+					slack.MsgOptionText("You can use ChessBot to play Chess with other teammates.", false),
+					slack.MsgOptionAttachments(getHelpAttachments()...))
 			}
 		case *slackevents.AppMentionEvent:
 			var gameID string
@@ -159,10 +168,11 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 	if outcome := gm.Outcome(); outcome != chess.NoOutcome {
 		s.displayEndGame(gm, ev)
 	} else {
-		s.SlackClient.PostMessage(ev.Channel, fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), slack.PostMessageParameters{
-			ThreadTimestamp: ev.TimeStamp,
-			Attachments:     []slack.Attachment{boardAttachment},
-		})
+		s.SlackClient.PostMessage(
+			ev.Channel,
+			slack.MsgOptionText(fmt.Sprintf("<@%v>'s (%v) turn.", gm.TurnPlayer().ID, gm.Turn()), false),
+			slack.MsgOptionAttachments(boardAttachment),
+			slack.MsgOptionTS(ev.TimeStamp))
 	}
 }
 
@@ -177,10 +187,11 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 		Text:     gm.LastMove().String(),
 		ImageURL: link.String(),
 	}
-	s.SlackClient.PostMessage(ev.Channel, gm.ResultText(), slack.PostMessageParameters{
-		ThreadTimestamp: ev.TimeStamp,
-		Attachments:     []slack.Attachment{boardAttachment, pgnAttachment},
-	})
+	s.SlackClient.PostMessage(
+		ev.Channel,
+		slack.MsgOptionText(gm.ResultText(), false),
+		slack.MsgOptionTS(ev.TimeStamp),
+		slack.MsgOptionAttachments(boardAttachment, pgnAttachment))
 	// @todo persist record to some incremental storage (redis, etc)
 }
 
@@ -208,31 +219,31 @@ func (s SlackHandler) handleChallengeCommand(gameID string, ev *slackevents.AppM
 		ChannelID:    ev.Channel,
 	}
 	s.ChallengeStorage.StoreChallenge(challenge)
-	s.SlackClient.PostMessage(channelID, fmt.Sprintf("<@%v> has challenged you to a game of chess!", ev.User), slack.PostMessageParameters{
-		Attachments: []slack.Attachment{
-			slack.Attachment{
-				Text:       "Do you accept?",
-				Fallback:   "Unable to accept the challenge.",
-				CallbackID: "challenge_response",
-				Actions: []slack.AttachmentAction{
-					slack.AttachmentAction{
-						Name:  "challenge",
-						Text:  "Accept Challenge",
-						Type:  "button",
-						Value: "accept",
-					},
-					slack.AttachmentAction{
-						Name:  "challenge",
-						Text:  "Decline",
-						Type:  "button",
-						Style: "danger",
-						Value: "reject",
-					},
+	s.SlackClient.PostMessage(
+		channelID,
+		slack.MsgOptionText(fmt.Sprintf("<@%v> has challenged you to a game of chess!", ev.User), false),
+		slack.MsgOptionAttachments(slack.Attachment{
+			Text:       "Do you accept?",
+			Fallback:   "Unable to accept the challenge.",
+			CallbackID: "challenge_response",
+			Actions: []slack.AttachmentAction{
+				slack.AttachmentAction{
+					Name:  "challenge",
+					Text:  "Accept Challenge",
+					Type:  "button",
+					Value: "accept",
+				},
+				slack.AttachmentAction{
+					Name:  "challenge",
+					Text:  "Decline",
+					Type:  "button",
+					Style: "danger",
+					Value: "reject",
 				},
 			},
 		},
-	})
-	s.SlackClient.PostEphemeral(ev.Channel, ev.User, slack.MsgOptionText("Challenge has been sent.", true))
+		))
+	s.SlackClient.PostEphemeral(ev.Channel, ev.User, slack.MsgOptionText("Challenge has been sent.", false))
 }
 
 func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMentionEvent) {
@@ -269,46 +280,38 @@ func getHelpAttachments() []slack.Attachment {
 }
 
 func (s SlackHandler) handleHelpCommand(gameID string, ev *slackevents.AppMentionEvent) {
-	text := "You can use ChessBot to play Chess with other teammates."
+	text := slack.MsgOptionText("You can use ChessBot to play Chess with other teammates.", false)
 	if ev.ThreadTimeStamp == "" || ev.TimeStamp == ev.ThreadTimeStamp {
-		s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
-			Attachments: getHelpAttachments(),
-		})
+		s.SlackClient.PostMessage(
+			ev.Channel,
+			text,
+			slack.MsgOptionAttachments(getHelpAttachments()...))
 		return
 	}
-	s.SlackClient.PostMessage(ev.Channel, text, slack.PostMessageParameters{
-		ThreadTimestamp: gameID,
-		Attachments:     getHelpAttachments(),
-	})
+	s.SlackClient.PostMessage(
+		ev.Channel,
+		text,
+		slack.MsgOptionTS(gameID),
+		slack.MsgOptionAttachments(getHelpAttachments()...))
 }
 
 func (s SlackHandler) sendError(gameID string, channel string, text string) {
-	_, _, err := s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
-		ThreadTimestamp: gameID,
-	})
+	_, _, err := s.SlackClient.PostMessage(
+		channel,
+		slack.MsgOptionText(text, false),
+		slack.MsgOptionTS(gameID))
 	if err != nil {
 		log.Println(err)
 	}
 }
 
 func (s SlackHandler) sendErrorWithHelp(gameID string, channel string, text string) {
-	_, _, err := s.SlackClient.PostMessage(channel, text, slack.PostMessageParameters{
-		ThreadTimestamp: gameID,
-		Attachments:     getHelpAttachments(),
-	})
+	_, _, err := s.SlackClient.PostMessage(
+		channel,
+		slack.MsgOptionText(text, false),
+		slack.MsgOptionTS(gameID),
+		slack.MsgOptionAttachments(getHelpAttachments()...))
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-// Not using this for now since the challenge request doesn't appear to send it
-// Also we'd need to implement this in a form that slackevents.ParseEvent() can use for verification
-func (s SlackHandler) validateSignature(r *http.Request, body string) bool {
-	timestamp := r.Header.Get("X-Slack-Request-Timestamp")
-	requestSignature := r.Header.Get("X-Slack-Signature")
-	compiled := fmt.Sprintf("%v:%v:%v", requestVersion, timestamp, body)
-	mac := hmac.New(sha256.New, []byte(s.SigningKey))
-	mac.Write([]byte(compiled))
-	expectedSignature := mac.Sum(nil)
-	return hmac.Equal(expectedSignature, []byte(requestSignature))
 }

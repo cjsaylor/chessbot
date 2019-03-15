@@ -2,8 +2,6 @@ github.com/caarlos0/env v3.3.0+incompatible h1:jCfY0ilpzC2FFViyZyDKCxKybDESTwaR+
 github.com/caarlos0/env v3.3.0+incompatible/go.mod h1:tdCsowwCzMLdkqRYDlHpZCp2UooDD3MspDBjZ2AD02Y=
 github.com/cjsaylor/chessimage v0.0.0-20190107020940-8abad33612f4 h1:U70Ohwln5iU8lFp1hUaCJG2MgHsnwsAkMWF4swb8z6g=
 github.com/cjsaylor/chessimage v0.0.0-20190107020940-8abad33612f4/go.mod h1:P2rvcEmV7UwQCr7hSwCSt4fRBPaa1jO0Usm7dtWtHOE=
-github.com/cjsaylor/slack v0.4.2 h1:b9le26KUTnrXnixvvG5ezJ02cfJtk60VELtbJ27t3go=
-github.com/cjsaylor/slack v0.4.2/go.mod h1:1bT44mK2u0mtAqd1K1gIraYolR3g1lW3m3QJXNEPq6c=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/flopp/go-findfont v0.0.0-20180308170802-e788239e52bc h1:cqzZoaYMsDUGa4J2OP6UiJqRxXHarhT8tKkO/WpFL5Y=

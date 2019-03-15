@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cjsaylor/slack"
+	"github.com/nlopes/slack"
 )
 
 // SlackOauthHandler will respond to all Slack authorization callbacks
@@ -22,7 +22,7 @@ func (s SlackOauthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("invalid oauth code requested")
 		return
 	}
-	resp, err := slack.GetOAuthResponse(s.SlackClientID, s.SlackClientSecret, code, "", false)
+	resp, err := slack.GetOAuthResponse(http.DefaultClient, s.SlackClientID, s.SlackClientSecret, code, "")
 	if err != nil {
 		log.Println(err)
 		return
