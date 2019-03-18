@@ -37,8 +37,15 @@ Features
    gameplay/resignation.md
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Development
+   :maxdepth: 2
+   :caption: Support
 
-    development/github.md
+   support/general.md
+   support/privacy.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Development
+
+   development/github.md
 

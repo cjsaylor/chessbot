@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; ChessBot for Slack 1.0.0 documentation</title>
+  <title>Privacy &mdash; ChessBot for Slack 1.0.0 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Challenging a player" href="../gameplay/challenging.html" />
-    <link rel="prev" title="ChessBot for Slack" href="../index.html" /> 
+    <link rel="next" title="Github" href="../development/github.html" />
+    <link rel="prev" title="General Support" href="general.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,8 +81,8 @@
             
             
               <p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/install.html">Installation</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Gameplay</span></p>
 <ul>
@@ -91,9 +91,19 @@
 <li class="toctree-l1"><a class="reference internal" href="../gameplay/resignation.html">Resignation</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Support</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../support/general.html">General Support</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../support/privacy.html">Privacy</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="general.html">General Support</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Privacy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#information-we-collect">1. Information We Collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#security">2. Security</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#third-party-access">3. Third party access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cookies">4. Cookies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#portability">5. Portability</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">Development</span></p>
 <ul>
@@ -143,13 +153,13 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Installation</li>
+      <li>Privacy</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/installation/install.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/support/privacy.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -162,13 +172,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>To get started, you’ll need to add ChessBot to your Slack workspace:</p>
-<p><a class="reference external" href="https://slack.com/oauth/authorize?scope=bot&amp;client_id=4813578032.414983030853"><img alt="https://platform.slack-edge.com/img/add_to_slack.png" src="https://platform.slack-edge.com/img/add_to_slack.png" /></a></p>
-<p>You’ll be presented with an authorization screen to give access to the ChessBots</p>
-<p><img alt="../_images/authorize.png" src="../_images/authorize.png" /></p>
-<p>Once you grant access, invite <code class="docutils literal notranslate"><span class="pre">&#64;chessbot</span></code> to the channel of your choice to play chess. We recommend a <code class="docutils literal notranslate"><span class="pre">#chess</span></code> channel.</p>
+  <div class="section" id="privacy">
+<h1>Privacy<a class="headerlink" href="#privacy" title="Permalink to this headline">¶</a></h1>
+<p>ChessBot is a Slack bot that operates for fun. As such, we use as little as possible identifying information in order to make the bot work.</p>
+<div class="section" id="information-we-collect">
+<h2>1. Information We Collect<a class="headerlink" href="#information-we-collect" title="Permalink to this headline">¶</a></h2>
+<p>We collect the following information from Slack in order to operate the game:</p>
+<ul class="simple">
+<li>Team ID, ex: <code class="docutils literal notranslate"><span class="pre">TXXXXXXX</span></code>. This allows the bot to select the correct authorization token in order to interact with your workspace.</li>
+<li>Authorization Token, the token granted by Slack to our bot in order to securely communicate with your workspace.</li>
+<li>User IDs involved with the game, ex: <code class="docutils literal notranslate"><span class="pre">UXXXXXX</span></code></li>
+<li>Channel IDs for game communication, ex: <code class="docutils literal notranslate"><span class="pre">CXXXXXX</span></code></li>
+<li>Chess moves made (stored in <code class="docutils literal notranslate"><span class="pre">PGN</span></code> format)</li>
+</ul>
+<div class="section" id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h3>
+<p>Our web server will log information about your request (such as your browser user-agent and IP address). This is necessary for service health monitoring as well as to prevent abuse of the service.</p>
+</div>
+</div>
+<div class="section" id="security">
+<h2>2. Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h2>
+<p>We store this information in a database that is not accessible from the internet.</p>
+</div>
+<div class="section" id="third-party-access">
+<h2>3. Third party access<a class="headerlink" href="#third-party-access" title="Permalink to this headline">¶</a></h2>
+<p>We share User IDs and chess moves made in games with Lichess.org in order to import it for your analysis. This is not done automatically, it requires a player to click the “Analyze Game” link at the end of the game.</p>
+</div>
+<div class="section" id="cookies">
+<h2>4. Cookies<a class="headerlink" href="#cookies" title="Permalink to this headline">¶</a></h2>
+<p>We do not use cookies.</p>
+</div>
+<div class="section" id="portability">
+<h2>5. Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h2>
+<p>If requested, we will attempt to get all information pertaining to your user ID.</p>
+</div>
 </div>
 
 
@@ -179,10 +216,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../gameplay/challenging.html" class="btn btn-neutral float-right" title="Challenging a player" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../development/github.html" class="btn btn-neutral float-right" title="Github" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../index.html" class="btn btn-neutral float-left" title="ChessBot for Slack" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="general.html" class="btn btn-neutral float-left" title="General Support" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
