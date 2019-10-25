@@ -2,8 +2,9 @@
 
 [![](https://drone.chris-saylor.com/api/badges/cjsaylor/chessbot/status.svg)](https://drone.chris-saylor.com/cjsaylor/chessbot)
 [![GoDoc](https://godoc.org/github.com/cjsaylor/chessbot?status.svg)](https://godoc.org/github.com/cjsaylor/chessbot)
+[![Player Documentation](https://img.shields.io/badge/doc-player-blue)](https://www.chris-saylor.com/chessbot)
 
-This is a Slack bot that allows players in a channel to challenge each other to a game of Chess.
+This is a Slack bot that allows players to challenge each other to a game of Chess.
 
 ![](./doc/screenshot.png)
 
@@ -130,10 +131,6 @@ rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
 
 ## Why not use Slack's RTM API?
 
-There are two reason:
-
-1. We have to implement a web server anyways for serving the game board as a PNG to be unfurled by Slack.
-2. RTM messages don't support attachments yet.
-
-I will reconsider RTM if the messaging ability improves and I will split off the gameboard rendering webserver
-to its own process at that time.
+1. We do not need realtime communication, webhooks perform perfectly fine for the asynchonous nature of Chess.
+2. We have to implement a web server anyways for serving the game board as a PNG to be unfurled by Slack.
+3. RTM messages don't support attachments.
