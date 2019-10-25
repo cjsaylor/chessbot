@@ -31,22 +31,28 @@ const requestVersion = "v0"
 
 type command uint8
 
-const (
-	unknownCommand command = iota
-	challengeCommand
-	moveCommand
-	resignCommand
-	helpCommand
-)
-
-var subChallengePattern = regexp.MustCompile("^<@[\\w|\\d]+>.*challenge <@([\\w\\d]+)>.*$")
-
-var commandPatterns = map[command]*regexp.Regexp{
-	challengeCommand: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge.*$"),
-	moveCommand:      regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8][qnrb]?).*$"),
-	resignCommand:    regexp.MustCompile("^<@[\\w|\\d]+>.*resign.*$"),
-	helpCommand:      regexp.MustCompile(".*help.*"),
+// SlackCommandPatterns is a list of patterns specific to how text is transmitted in the Slack platform.
+var slackCommandPatterns = []CommandPattern{
+	{
+		Type:    Challenge,
+		Pattern: regexp.MustCompile("^<@[\\w|\\d]+>.*challenge.*?<@([\\w\\d]+)>.*$"),
+	},
+	{
+		Type:    Move,
+		Pattern: regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8][qnrb]?).*$"),
+	},
+	{
+		Type:    Resign,
+		Pattern: regexp.MustCompile("^<@[\\w|\\d]+>.*resign.*$"),
+	},
+	{
+		Type:    Help,
+		Pattern: regexp.MustCompile(".*help.*"),
+	},
 }
+
+// SlackCommandParser is an instance of the command parse specific to Slack platform formatting.
+var slackCommandParser = NewCommandParser(slackCommandPatterns)
 
 var colorToHex = map[game.Color]string{
 	game.Black: "#000000",
@@ -100,8 +106,8 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		innerEvent := event.InnerEvent
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.MessageEvent:
-			regex := regexp.MustCompile(".*help.*")
-			if ev.ChannelType == "im" && ev.BotID == "" && regex.MatchString(ev.Text) {
+			matched := slackCommandParser.ParseInput(ev.Text)
+			if ev.ChannelType == "im" && ev.BotID == "" && matched.Type == Help {
 				s.SlackClient.PostMessage(
 					ev.Channel,
 					slack.MsgOptionText("You can use ChessBot to play Chess with other teammates.", false),
@@ -114,32 +120,26 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			} else {
 				gameID = ev.ThreadTimeStamp
 			}
-			handler := unknownCommand
-			var captures []string
-			for command, regex := range commandPatterns {
-				results := regex.FindStringSubmatch(ev.Text)
-				if len(results) > 0 {
-					handler = command
-					captures = results[1:]
-				}
-			}
-			switch handler {
-			case unknownCommand:
+			matched := slackCommandParser.ParseInput(ev.Text)
+			switch matched.Type {
+			case Unknown:
 				s.sendErrorWithHelp(gameID, ev.Channel, "Sorry, I don't understand what you said.")
-			case moveCommand:
-				s.handleMoveCommand(gameID, captures[0], ev)
-			case challengeCommand:
-				s.handleChallengeCommand(gameID, ev)
-			case resignCommand:
+			case Challenge:
+				challengeCommand, _ := matched.ToChallenge()
+				s.handleChallengeCommand(gameID, challengeCommand, ev)
+			case Move:
+				moveCommand, _ := matched.ToMove()
+				s.handleMoveCommand(gameID, moveCommand, ev)
+			case Resign:
 				s.handleResignCommand(gameID, ev)
-			case helpCommand:
+			case Help:
 				s.handleHelpCommand(gameID, ev)
 			}
 		}
 	}
 }
 
-func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackevents.AppMentionEvent) {
+func (s SlackHandler) handleMoveCommand(gameID string, moveCommand *MoveCommand, ev *slackevents.AppMentionEvent) {
 	gm, err := s.GameStorage.RetrieveGame(gameID)
 	if err != nil {
 		log.Println(err)
@@ -150,7 +150,7 @@ func (s SlackHandler) handleMoveCommand(gameID string, move string, ev *slackeve
 		s.sendError(gameID, ev.Channel, "Please wait for your turn.")
 		return
 	}
-	chessMove, err := gm.Move(move)
+	chessMove, err := gm.Move(moveCommand.LAN)
 	if err != nil {
 		s.sendError(gameID, ev.Channel, err.Error())
 		return
@@ -195,26 +195,20 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 	// @todo persist record to some incremental storage (redis, etc)
 }
 
-func (s SlackHandler) handleChallengeCommand(gameID string, ev *slackevents.AppMentionEvent) {
-	results := subChallengePattern.FindStringSubmatch(ev.Text)
-	if len(results) < 2 {
-		s.sendErrorWithHelp(gameID, ev.Channel, "Please mention a valid user in order to issue a challenge.")
-		return
-	}
-	challengedUser := results[1]
+func (s SlackHandler) handleChallengeCommand(gameID string, command *ChallengeCommand, ev *slackevents.AppMentionEvent) {
 	if _, err := s.GameStorage.RetrieveGame(gameID); err == nil {
 		s.sendErrorWithHelp(gameID, ev.Channel, "A game already exists in this thread. Try making a new thread.")
 		return
 	}
-	_, _, channelID, err := s.SlackClient.OpenIMChannel(challengedUser)
+	_, _, channelID, err := s.SlackClient.OpenIMChannel(command.ChallengedID)
 	if err != nil {
-		log.Printf("unable to challenge %v: %v", challengedUser, err)
+		log.Printf("unable to challenge %v: %v", command.ChallengedID, err)
 		s.sendError(gameID, ev.Channel, "Unable to challenge that player.")
 		return
 	}
 	challenge := &game.Challenge{
 		ChallengerID: ev.User,
-		ChallengedID: challengedUser,
+		ChallengedID: command.ChallengedID,
 		GameID:       gameID,
 		ChannelID:    ev.Channel,
 	}
