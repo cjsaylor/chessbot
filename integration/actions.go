@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessbot/rendering"
@@ -66,8 +65,11 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		s.SlackClient = slack.New(botToken)
 	}
-	results := regexp.MustCompile("^<@([\\w|\\d]+).*$").FindStringSubmatch(event.OriginalMessage.Text)
-	challenge, err := s.ChallengeStorage.RetrieveChallenge(results[1], event.User.ID)
+	if event.Type != "interactive_message" && event.CallbackID != "challenge_response" {
+		s.sendResponse(w, event.OriginalMessage, "Invalid action.")
+		return
+	}
+	challenge, err := s.ChallengeStorage.RetrieveChallenge(event.User.ID, event.User.ID)
 	if err != nil {
 		log.Println(err)
 		s.sendResponse(w, event.OriginalMessage, "Challenge automatically declined. We couldn't find it in our system.")
@@ -88,7 +90,7 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	gm := game.NewGame(gameID, game.Player{
 		ID: event.User.ID,
 	}, game.Player{
-		ID: results[1],
+		ID: challenge.ChallengerID,
 	})
 	s.GameStorage.StoreGame(gameID, gm)
 	gm.Start()
