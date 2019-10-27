@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/cjsaylor/chessbot/game"
+	"github.com/cjsaylor/chessbot/integration"
 )
 
 func randomInt(min, max int) int {
@@ -22,6 +24,12 @@ func randomString(len int) string {
 	}
 	return string(bytes)
 }
+
+const (
+	export integration.CommandType = iota + integration.Help
+	fen
+	exit
+)
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -50,6 +58,28 @@ func main() {
 		gm = game.NewGame(gameID, players...)
 
 	}
+	inputParser := integration.NewCommandParser([]integration.CommandPattern{
+		{
+			Type:    integration.Move,
+			Pattern: regexp.MustCompile("^.*([a-h][1-8][a-h][1-8][qnrb]?).*$"),
+		},
+		{
+			Type:    integration.Resign,
+			Pattern: regexp.MustCompile("^.*resign.*"),
+		},
+		{
+			Type:    export,
+			Pattern: regexp.MustCompile("^.*export.*$"),
+		},
+		{
+			Type:    fen,
+			Pattern: regexp.MustCompile("^.*fen.*$"),
+		},
+		{
+			Type:    exit,
+			Pattern: regexp.MustCompile("^.*exit.*$"),
+		},
+	})
 	store.StoreGame(gameID, gm)
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println(gm)
@@ -57,37 +87,39 @@ func main() {
 	fmt.Print("\n> ")
 	for scanner.Scan() {
 		input := scanner.Text()
+		matchedCommand := inputParser.ParseInput(input)
 		gm, err := store.RetrieveGame(gameID)
 		if err != nil {
 			fmt.Println("Error reading in game: ", err)
 		}
-		switch scanner.Text() {
-		case "fen":
+		switch matchedCommand.Type {
+		case fen:
 			fmt.Println(gm.FEN())
 			fmt.Print("\n> ")
 			continue
-		case "export":
+		case export:
 			fmt.Println(gm.Export())
 			fmt.Print("\n> ")
 			continue
-		case "resign":
-			gm.Resign(gm.TurnPlayer())
-		case "resign1":
-			player, err := gm.PlayerByID("player1")
-			if err != nil {
-				fmt.Println(err)
-			}
-			gm.Resign(*player)
-		case "exit":
+		case exit:
 			os.Exit(0)
-		default:
-			_, err := gm.Move(input)
+		case integration.Move:
+			moveCommand, err := matchedCommand.ToMove()
 			if err != nil {
 				fmt.Println(err)
 				fmt.Print("\n> ")
 				continue
 			}
+			_, err = gm.Move(moveCommand.LAN)
+			if err != nil {
+				fmt.Println(err)
+				fmt.Print("\n> ")
+				continue
+			}
+		case integration.Resign:
+			gm.Resign(gm.TurnPlayer())
 		}
+
 		store.StoreGame(gameID, gm)
 		fmt.Println(gm)
 		if outcome := gm.Outcome(); outcome != "*" {
