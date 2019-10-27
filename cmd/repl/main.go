@@ -104,7 +104,7 @@ func main() {
 		case exit:
 			os.Exit(0)
 		case integration.Move:
-			moveCommand, err := integration.MoveCommandFromCommandMatch(&matchedCommand)
+			moveCommand, err := matchedCommand.ToMove()
 			if err != nil {
 				fmt.Println(err)
 				fmt.Print("\n> ")
