@@ -7,12 +7,15 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessbot/rendering"
 	"github.com/nlopes/slack"
 	"github.com/nlopes/slack/slackevents"
 )
+
+var challengerPattern = regexp.MustCompile("^<@([\\w|\\d]+).*$")
 
 // SlackActionHandler will respond to all Slack integration component requests
 type SlackActionHandler struct {
@@ -69,7 +72,8 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.sendResponse(w, event.OriginalMessage, "Invalid action.")
 		return
 	}
-	challenge, err := s.ChallengeStorage.RetrieveChallenge(event.User.ID, event.User.ID)
+	results := challengerPattern.FindStringSubmatch(event.OriginalMessage.Text)
+	challenge, err := s.ChallengeStorage.RetrieveChallenge(results[1], event.User.ID)
 	if err != nil {
 		log.Println(err)
 		s.sendResponse(w, event.OriginalMessage, "Challenge automatically declined. We couldn't find it in our system.")
