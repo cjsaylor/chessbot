@@ -41,3 +41,21 @@ func TestExportAndMoveMore(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestLastMoveTimeRecorded(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		game.Player{
+			ID: "a",
+		},
+		game.Player{
+			ID: "b",
+		},
+	}...)
+	if !gm.LastMoved().IsZero() {
+		t.Error("expected last move to be a zero value")
+	}
+	gm.Move("d2d4")
+	if gm.LastMoved().IsZero() {
+		t.Error("expected the last moved date to be set")
+	}
+}

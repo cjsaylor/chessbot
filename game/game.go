@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/notnil/chess"
 )
@@ -42,7 +43,7 @@ type Game struct {
 	game        *chess.Game
 	Players     map[Color]Player
 	started     bool
-	lastMove    *chess.Move
+	lastMoved   time.Time
 	checkedTile *chess.Square
 }
 
@@ -53,6 +54,7 @@ func NewGame(ID string, players ...Player) *Game {
 		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
 	}
 	attachPlayers(gm, players...)
+	gm.lastMoved = time.Time{}
 	return gm
 }
 
@@ -81,6 +83,7 @@ func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 		started: true,
 	}
 	attachPlayers(game, players...)
+	game.lastMoved = time.Time{}
 	return game, nil
 }
 
@@ -99,6 +102,7 @@ func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, e
 	game.Players[White] = white
 	black.color = Black
 	game.Players[Black] = black
+	game.lastMoved = time.Time{}
 	return game, nil
 }
 
@@ -185,6 +189,11 @@ func (g *Game) LastMove() *chess.Move {
 	return moves[len(moves)-1]
 }
 
+// LastMoved is the last time a move was made
+func (g *Game) LastMoved() time.Time {
+	return g.lastMoved
+}
+
 // Move a Chess piece based on standard algabreic notation (d2d4, etc)
 func (g *Game) Move(san string) (*chess.Move, error) {
 	err := g.game.MoveStr(san)
@@ -192,6 +201,7 @@ func (g *Game) Move(san string) (*chess.Move, error) {
 		return nil, err
 	}
 	g.started = true
+	g.lastMoved = time.Now()
 	return g.LastMove(), nil
 }
 
