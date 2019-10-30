@@ -46,6 +46,10 @@ var slackCommandPatterns = []CommandPattern{
 		Pattern: regexp.MustCompile("^<@[\\w|\\d]+>.*resign.*$"),
 	},
 	{
+		Type:    Takeback,
+		Pattern: regexp.MustCompile("^<@[\\w|\\d]+>.*take\\s?back.*$"),
+	},
+	{
 		Type:    Help,
 		Pattern: regexp.MustCompile(".*help.*"),
 	},
@@ -132,6 +136,8 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.handleMoveCommand(gameID, moveCommand, ev)
 			case Resign:
 				s.handleResignCommand(gameID, ev)
+			case Takeback:
+				s.handleTakebackCommand(gameID, ev)
 			case Help:
 				s.handleHelpCommand(gameID, ev)
 			}
@@ -253,6 +259,41 @@ func (s SlackHandler) handleResignCommand(gameID string, ev *slackevents.AppMent
 	}
 	gm.Resign(*player)
 	s.displayEndGame(gm, ev)
+}
+
+func (s SlackHandler) handleTakebackCommand(gameID string, ev *slackevents.AppMentionEvent) {
+	gm, err := s.GameStorage.RetrieveGame(gameID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	player, err := gm.PlayerByID(ev.User)
+	if err != nil {
+		s.sendError(gameID, ev.Channel, "I couldn't find you as part of this game.")
+		return
+	}
+	chessMove, err := gm.Takeback(player)
+	if err != nil {
+		s.sendError(gameID, ev.Channel, fmt.Sprintf("Take back request failed: %v", err))
+		return
+	}
+	link, _ := s.LinkRenderer.CreateLink(gm)
+	boardAttachment := slack.Attachment{
+		ImageURL: link.String(),
+		Color:    colorToHex[gm.Turn()],
+	}
+	if chessMove != nil {
+		boardAttachment.Text = chessMove.String()
+	}
+	if err := s.GameStorage.StoreGame(gameID, gm); err != nil {
+		s.sendError(gameID, ev.Channel, err.Error())
+		return
+	}
+	s.SlackClient.PostMessage(
+		ev.Channel,
+		slack.MsgOptionText(fmt.Sprintf("<@%v> requested a take back, it is now <@%v>'s turn again.", player.ID, gm.TurnPlayer().ID), false),
+		slack.MsgOptionAttachments(boardAttachment),
+		slack.MsgOptionTS(ev.TimeStamp))
 }
 
 func getHelpAttachments() []slack.Attachment {
