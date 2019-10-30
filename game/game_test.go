@@ -2,6 +2,7 @@ package game_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/cjsaylor/chessbot/game"
 )
@@ -57,5 +58,101 @@ func TestLastMoveTimeRecorded(t *testing.T) {
 	gm.Move("d2d4")
 	if gm.LastMoved().IsZero() {
 		t.Error("expected the last moved date to be set")
+	}
+}
+
+func TestTakebackRequestWithinThreshold(t *testing.T) {
+	takebackPlayer := game.Player{
+		ID: "a",
+	}
+	gm := game.NewGame("1234", []game.Player{
+		takebackPlayer,
+		game.Player{
+			ID: "b",
+		},
+	}...)
+	now := time.Now()
+	gm.SetTimeProvider(func() time.Time {
+		return now
+	})
+	gm.Move("d2d4")
+	if _, err := gm.Takeback(&takebackPlayer); err != nil {
+		t.Error(err)
+		t.Error("expected the takeback request to succeed")
+	}
+	gm.Move("d2d4")
+	gm.SetTimeProvider(func() time.Time {
+		return now.Add(game.TakebackThreshold + time.Second)
+	})
+	_, err := gm.Takeback(&takebackPlayer)
+	if err != game.ErrPastTimeThreshold {
+		t.Errorf("expected a takeback threshold exceeded error, got %v", err)
+	}
+}
+
+func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
+	takebackPlayer := game.Player{
+		ID: "a",
+	}
+	otherTakebackPlayer := game.Player{
+		ID: "b",
+	}
+	gm := game.NewGame("1234", []game.Player{
+		takebackPlayer,
+		otherTakebackPlayer,
+	}...)
+	gm.Move("d2d4")
+	if _, err := gm.Takeback(&takebackPlayer); err != nil {
+		t.Error(err)
+		t.Error("expected takeback to succeed for the player that initiated the move")
+	}
+	gm.Move("d2d4")
+	if _, err := gm.Takeback(&otherTakebackPlayer); err == nil {
+		t.Error("expected takeback to fail due to \"current\" player requesting a takeback")
+	}
+	gm = game.NewGame("1234", []game.Player{
+		takebackPlayer,
+		otherTakebackPlayer,
+	}...)
+	gm.Move("d2d4")
+	gm.Move("d7d5")
+	gm.Takeback(&otherTakebackPlayer)
+	if _, err := gm.Takeback(&takebackPlayer); err != game.ErrPastTimeThreshold {
+		t.Error(err)
+		t.Error("expected a time threshold error due to the previous takeback wiping out the last moved time period")
+	}
+}
+
+func TestTakebackRequestWithCompletedGame(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		game.Player{
+			ID: "a",
+		},
+		game.Player{
+			ID: "b",
+		},
+	}...)
+	gm.Move("d2d4")
+	resigner, _ := gm.PlayerByID("a")
+	gm.Resign(*resigner)
+	if _, err := gm.Takeback(resigner); err != game.ErrGameCompleted {
+		t.Error(err)
+		t.Error("expected the takeback to fail due to the game being over")
+	}
+}
+
+func TestTakebackRequestWithNoMoves(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		game.Player{
+			ID: "a",
+		},
+		game.Player{
+			ID: "b",
+		},
+	}...)
+	requester := gm.TurnPlayer()
+	if _, err := gm.Takeback(&requester); err != game.ErrGameHasNoMoves {
+		t.Error(err)
+		t.Error("expected the takeback to fail due to not having any moves in the game yet")
 	}
 }

@@ -21,14 +21,25 @@ type Challenge struct {
 
 type Color string
 
+// White represents the color of the white set.
+// Black represents the color of the black set.
+// TakebackThreshold represents number of minutes to allow a takeback
 const (
-	White Color = "White"
-	Black Color = "Black"
+	White             Color         = "White"
+	Black             Color         = "Black"
+	TakebackThreshold time.Duration = time.Minute
 )
 
 var colorMap = map[Color]chess.Color{
 	White: chess.White,
 	Black: chess.Black,
+}
+
+// TimeProvider is a closure that returns the current time as determined by the provider
+type TimeProvider func() time.Time
+
+var defaultTimeProvider TimeProvider = func() time.Time {
+	return time.Now()
 }
 
 // Player represents a human Chess player
@@ -39,22 +50,24 @@ type Player struct {
 
 // Game is the state of a game (active or not)
 type Game struct {
-	ID          string
-	game        *chess.Game
-	Players     map[Color]Player
-	started     bool
-	lastMoved   time.Time
-	checkedTile *chess.Square
+	ID           string
+	game         *chess.Game
+	Players      map[Color]Player
+	started      bool
+	lastMoved    time.Time
+	checkedTile  *chess.Square
+	timeProvider TimeProvider
 }
 
 // NewGame will create a new game with typical starting positions
 func NewGame(ID string, players ...Player) *Game {
 	gm := &Game{
-		ID:   ID,
-		game: chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
+		ID:           ID,
+		game:         chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{})),
+		lastMoved:    time.Time{},
+		timeProvider: defaultTimeProvider,
 	}
 	attachPlayers(gm, players...)
-	gm.lastMoved = time.Time{}
 	return gm
 }
 
@@ -78,12 +91,13 @@ func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 		return &Game{}, err
 	}
 	game := &Game{
-		ID:      ID,
-		game:    chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
-		started: true,
+		ID:           ID,
+		game:         chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
+		timeProvider: defaultTimeProvider,
+		lastMoved:    time.Time{},
+		started:      true,
 	}
 	attachPlayers(game, players...)
-	game.lastMoved = time.Time{}
 	return game, nil
 }
 
@@ -94,15 +108,16 @@ func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, e
 		return &Game{}, err
 	}
 	game := &Game{
-		ID:   ID,
-		game: chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
+		ID:           ID,
+		game:         chess.NewGame(gameState, chess.UseNotation(chess.LongAlgebraicNotation{})),
+		lastMoved:    time.Time{},
+		timeProvider: defaultTimeProvider,
 	}
 	game.Players = make(map[Color]Player)
 	white.color = White
 	game.Players[White] = white
 	black.color = Black
 	game.Players[Black] = black
-	game.lastMoved = time.Time{}
 	return game, nil
 }
 
@@ -201,7 +216,7 @@ func (g *Game) Move(san string) (*chess.Move, error) {
 		return nil, err
 	}
 	g.started = true
-	g.lastMoved = time.Now()
+	g.lastMoved = g.timeProvider()
 	return g.LastMove(), nil
 }
 
@@ -230,6 +245,51 @@ func (g *Game) CheckedKing() chess.Square {
 		}
 	}
 	return chess.NoSquare
+}
+
+// ErrGameHasNoMoves is an error representing an action that failed due to the game having no moves yet.
+var ErrGameHasNoMoves = errors.New("game has no moves yet")
+
+// ErrGameCompleted is an error representing an action that failed due to the game being completed.
+var ErrGameCompleted = errors.New("game is already completed")
+
+// ErrPlayerAlreadyMoved is an error representing an action that failed due to a another player move.
+var ErrPlayerAlreadyMoved = errors.New("other player has already made a move")
+
+// ErrPastTimeThreshold is an error representing an action that failed due to taking place after a specific threshold
+var ErrPastTimeThreshold = fmt.Errorf("exceeded threshold of %v", TakebackThreshold)
+
+// Takeback reverts the game to the previous move prior to the last move.
+// Note: If the first move of the game is taken back, the resulting move will be nil
+func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
+	if g.LastMove() == nil {
+		return nil, ErrGameHasNoMoves
+	}
+	if g.Outcome() != chess.NoOutcome {
+		return nil, ErrGameCompleted
+	}
+	turnPlayer := g.TurnPlayer()
+	if requestingPlayer.ID == turnPlayer.ID {
+		return nil, ErrPlayerAlreadyMoved
+	}
+	if elapsed := g.timeProvider().Sub(g.LastMoved()); elapsed > TakebackThreshold {
+		return nil, ErrPastTimeThreshold
+	}
+	newGame := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+	moves := g.game.Moves()
+	withoutLast := moves[:len(moves)-1]
+	for _, move := range withoutLast {
+		newGame.Move(move)
+	}
+	g.game = newGame
+	// Prevent cascading takebacks
+	g.lastMoved = time.Time{}
+	return g.LastMove(), nil
+}
+
+// SetTimeProvider allows the time provider to be overwritten (exclusively for testing)
+func (g *Game) SetTimeProvider(provider TimeProvider) {
+	g.timeProvider = provider
 }
 
 // String representation of the current game state (draws an ascii board)
