@@ -17,6 +17,8 @@ const (
 	Move
 	// Resign represents a player's intention of resignation.
 	Resign
+	// Takeback represents a player's request to take back a previous move.
+	Takeback
 	// Help represents a player's need for help (UI or otherwise).
 	Help
 )
