@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/cjsaylor/chessbot/analysis"
 	"github.com/cjsaylor/chessbot/config"
@@ -11,6 +13,10 @@ import (
 	"github.com/cjsaylor/chessbot/integration"
 	"github.com/cjsaylor/chessbot/rendering"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func main() {
 	config, err := config.ParseConfiguration()
