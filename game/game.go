@@ -72,16 +72,17 @@ func NewGame(ID string, players ...Player) *Game {
 }
 
 func attachPlayers(game *Game, players ...Player) {
-	randomOrder := make([]Player, len(players))
-	perm := rand.Perm(len(players))
-	for i, v := range perm {
-		randomOrder[v] = players[i]
+	playerList := []Player{}
+	playerList = append(playerList, players...)
+	rand.Shuffle(2, func(i, j int) {
+		playerList[i], playerList[j] = playerList[j], playerList[i]
+	})
+	playerList[0].color = White
+	playerList[1].color = Black
+	game.Players = map[Color]Player{
+		White: playerList[0],
+		Black: playerList[1],
 	}
-	game.Players = make(map[Color]Player)
-	randomOrder[0].color = White
-	game.Players[White] = randomOrder[0]
-	randomOrder[1].color = Black
-	game.Players[Black] = randomOrder[1]
 }
 
 // NewGameFromFEN will create a new game with a given FEN starting position

@@ -1,11 +1,16 @@
 package game_test
 
 import (
+	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/cjsaylor/chessbot/game"
 )
+
+func init() {
+	rand.Seed(0)
+}
 
 func TestExport(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
@@ -62,11 +67,10 @@ func TestLastMoveTimeRecorded(t *testing.T) {
 }
 
 func TestTakebackRequestWithinThreshold(t *testing.T) {
-	takebackPlayer := game.Player{
-		ID: "a",
-	}
 	gm := game.NewGame("1234", []game.Player{
-		takebackPlayer,
+		game.Player{
+			ID: "a",
+		},
 		game.Player{
 			ID: "b",
 		},
@@ -75,6 +79,7 @@ func TestTakebackRequestWithinThreshold(t *testing.T) {
 	gm.SetTimeProvider(func() time.Time {
 		return now
 	})
+	takebackPlayer := gm.TurnPlayer()
 	gm.Move("d2d4")
 	if _, err := gm.Takeback(&takebackPlayer); err != nil {
 		t.Error(err)
@@ -91,17 +96,17 @@ func TestTakebackRequestWithinThreshold(t *testing.T) {
 }
 
 func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
-	takebackPlayer := game.Player{
-		ID: "a",
-	}
-	otherTakebackPlayer := game.Player{
-		ID: "b",
-	}
 	gm := game.NewGame("1234", []game.Player{
-		takebackPlayer,
-		otherTakebackPlayer,
+		game.Player{
+			ID: "a",
+		},
+		game.Player{
+			ID: "b",
+		},
 	}...)
+	takebackPlayer := gm.TurnPlayer()
 	gm.Move("d2d4")
+	otherTakebackPlayer := gm.TurnPlayer()
 	if _, err := gm.Takeback(&takebackPlayer); err != nil {
 		t.Error(err)
 		t.Error("expected takeback to succeed for the player that initiated the move")
@@ -110,11 +115,6 @@ func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 	if _, err := gm.Takeback(&otherTakebackPlayer); err == nil {
 		t.Error("expected takeback to fail due to \"current\" player requesting a takeback")
 	}
-	gm = game.NewGame("1234", []game.Player{
-		takebackPlayer,
-		otherTakebackPlayer,
-	}...)
-	gm.Move("d2d4")
 	gm.Move("d7d5")
 	gm.Takeback(&otherTakebackPlayer)
 	if _, err := gm.Takeback(&takebackPlayer); err != game.ErrPastTimeThreshold {
