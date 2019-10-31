@@ -68,6 +68,10 @@ func main() {
 			Pattern: regexp.MustCompile("^.*resign.*"),
 		},
 		{
+			Type:    integration.Takeback,
+			Pattern: regexp.MustCompile("^.*takeback.*"),
+		},
+		{
 			Type:    export,
 			Pattern: regexp.MustCompile("^.*export.*$"),
 		},
@@ -118,6 +122,19 @@ func main() {
 			}
 		case integration.Resign:
 			gm.Resign(gm.TurnPlayer())
+		case integration.Takeback:
+			currentTurnPlayer := gm.TurnPlayer()
+			var takebackPlayer game.Player
+			for _, player := range players {
+				if player.ID != currentTurnPlayer.ID {
+					takebackPlayer = player
+				}
+			}
+			if _, err := gm.Takeback(&takebackPlayer); err != nil {
+				fmt.Println(err)
+				fmt.Print("\n> ")
+				continue
+			}
 		}
 
 		store.StoreGame(gameID, gm)

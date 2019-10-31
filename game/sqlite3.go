@@ -2,6 +2,8 @@ package game
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
 
 	// import sqlite package for use with the sql interface
 	_ "github.com/mattn/go-sqlite3"
@@ -12,6 +14,7 @@ const gameTabelCreation = `
 		id text PRIMARY KEY,
 		player_white_id text,
 		player_black_id text,
+		last_moved datetime,
 		pgn text
 	);
 `
@@ -39,7 +42,7 @@ func NewSqliteStore(path string) (*SqliteStore, error) {
 	store := SqliteStore{
 		path: path,
 	}
-	db, err := sql.Open("sqlite3", store.path)
+	db, err := sql.Open("sqlite3", fmt.Sprintf("%v?parseTime=1", path))
 	if err != nil {
 		return nil, err
 	}
@@ -57,35 +60,41 @@ func NewSqliteStore(path string) (*SqliteStore, error) {
 // If a game is already established, only the PGN log is updated
 func (s *SqliteStore) StoreGame(ID string, gm *Game) error {
 	if _, err := s.RetrieveGame(ID); err == nil {
-		stmt, _ := s.db.Prepare("update games set pgn = ? where id = ?")
+		stmt, _ := s.db.Prepare("update games set pgn = ?, last_moved = ? where id = ?")
 		defer stmt.Close()
-		_, err := stmt.Exec(gm.PGN(), ID)
+		_, err := stmt.Exec(gm.PGN(), gm.LastMoved(), ID)
 		return err
 	}
-	stmt, _ := s.db.Prepare("insert into games (id, player_white_id, player_black_id, pgn) values (?, ?, ?, ?)")
+	stmt, _ := s.db.Prepare("insert into games (id, player_white_id, player_black_id, last_moved, pgn) values (?, ?, ?, ?, ?)")
 	defer stmt.Close()
-	_, err := stmt.Exec(ID, gm.Players[White].ID, gm.Players[Black].ID, gm.PGN())
+	_, err := stmt.Exec(ID, gm.Players[White].ID, gm.Players[Black].ID, gm.LastMoved(), gm.PGN())
 	return err
 }
 
 // RetrieveGame retrieves a game by ID
 func (s *SqliteStore) RetrieveGame(ID string) (*Game, error) {
-	stmt, err := s.db.Prepare("select player_white_id, player_black_id, pgn from games where id = ?")
+	stmt, err := s.db.Prepare("select player_white_id, player_black_id, last_moved, pgn from games where id = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 	var player1, player2, pgn string
+	var lastMoved time.Time
 	row := stmt.QueryRow(ID)
-	err = row.Scan(&player1, &player2, &pgn)
+	err = row.Scan(&player1, &player2, &lastMoved, &pgn)
 	if err != nil {
 		return nil, err
 	}
-	return NewGameFromPGN(ID, pgn, Player{
+	gm, err := NewGameFromPGN(ID, pgn, Player{
 		ID: player1,
 	}, Player{
 		ID: player2,
 	})
+	if err == nil {
+		gm.lastMoved = lastMoved
+	}
+
+	return gm, err
 }
 
 // StoreChallenge only supports inserting new challenges. Challenges should not be updated only inserted/removed
