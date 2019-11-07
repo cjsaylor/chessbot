@@ -8,7 +8,7 @@ steps:
     image: cjsaylor/go-alpine-sdk:1.12
     commands:
       - go get -u golang.org/x/tools/cmd/cover
-      - go test -cover $(go list ./... | grep -v /vendor/)
+      - go test -mod=vendor -cover $(go list ./... | grep -v /vendor/)
   - name: publish
     image: plugins/docker
     settings:
