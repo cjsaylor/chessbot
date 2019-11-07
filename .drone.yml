@@ -1,33 +1,38 @@
-workspace:
-  base: /go
-  path: src/github.com/cjsaylor/chessbot
+---
+kind: pipeline
+type: docker
+name: default
 
-pipeline:
-  test:
-    image: cjsaylor/go-alpine-sdk:1.10
+steps:
+  - name: test
+    image: cjsaylor/go-alpine-sdk:1.12
     commands:
       - go get -u golang.org/x/tools/cmd/cover
       - go test -cover $(go list ./... | grep -v /vendor/)
-  publish:
+  - name: publish
     image: plugins/docker
-    repo: cjsaylor/chessbot
-    secrets: [ docker_username, docker_password ]
-    tag: [ latest ]
+    settings:
+      repo: cjsaylor/chessbot
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags: latest
     when:
       branch: master
       event: push
       status: success
-  deploy:
+  - name: deploy
     image: appleboy/drone-ssh
-    host: box2.chris-saylor.com
-    username: root
-    volumes:
-      - /root/drone/drone_rsa:/root/ssh/drone_rsa
-    key_path: /root/ssh/drone_rsa
-    port: 22
-    script:
-      - cd /root/chessbot && bash deploy.sh
-    when:
-      branch: master
-      event: push
-      status: success
+    settings:
+      host: box2.chris-saylor.com
+      username: root
+      port: 22
+      script:
+        - cd /root/chessbot && bash deploy.sh
+      key:
+        from_secret: ssh_key
+      when:
+        branch: master
+        event: push
+        status: success
