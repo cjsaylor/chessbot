@@ -1,6 +1,6 @@
 # ChessBot
 
-[![](https://drone.chris-saylor.com/api/badges/cjsaylor/chessbot/status.svg)](https://drone.chris-saylor.com/cjsaylor/chessbot)
+[![Build Status](https://drone1.chris-saylor.com/api/badges/cjsaylor/chessbot/status.svg)](https://drone1.chris-saylor.com/cjsaylor/chessbot)
 [![GoDoc](https://godoc.org/github.com/cjsaylor/chessbot?status.svg)](https://godoc.org/github.com/cjsaylor/chessbot)
 [![Player Documentation](https://img.shields.io/badge/doc-player-blue)](https://www.chris-saylor.com/chessbot)
 
