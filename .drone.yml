@@ -32,7 +32,7 @@ steps:
         - cd /root/chessbot && bash deploy.sh
       key:
         from_secret: ssh_key
-      when:
-        branch: master
-        event: push
-        status: success
+    when:
+      branch: master
+      event: push
+      status: success
