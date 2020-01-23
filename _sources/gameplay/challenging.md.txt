@@ -2,6 +2,9 @@
 
 In order to begin a new game, you must first challenge a player.
 
+> __Note: Please ensure that the ChessBot is invited to the channel or private message__
+> __with the other party that you are challenging in order for the bot to "hear" the challenge.__
+
 To do so, mention the ChessBot and the user you wish to challenge.
 
 ```
