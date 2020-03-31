@@ -27,14 +27,14 @@ func main() {
 	var challengeStorage game.ChallengeStorage
 	var authStorage integration.AuthStorage
 	if config.SqlitePath != "" {
-		gameSqlStore, err := game.NewSqliteStore(config.SqlitePath)
+		gameSQLStore, err := game.NewSqliteStore(config.SqlitePath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		authSqlStore, err := integration.NewSqliteStore(config.SqlitePath)
-		gameStorage = gameSqlStore
-		challengeStorage = gameSqlStore
-		authStorage = authSqlStore
+		authSQLStore, err := integration.NewSqliteStore(config.SqlitePath)
+		gameStorage = gameSQLStore
+		challengeStorage = gameSQLStore
+		authStorage = authSQLStore
 	} else {
 		memoryStore := game.NewMemoryStore()
 		gameStorage = memoryStore
