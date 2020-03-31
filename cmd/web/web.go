@@ -45,7 +45,7 @@ func main() {
 	http.Handle("/board", rendering.BoardRenderHandler{
 		LinkRenderer: renderLink,
 	})
-	http.Handle("/analyze", analysis.NewHTTPHandler(gameStorage, analysis.LichessAnalyzer{}))
+	http.Handle("/analyze", analysis.NewHTTPHandler(gameStorage, analysis.NewChesscomAnalyzer(config.ChessAffiliateCode)))
 	http.Handle("/slack", integration.SlackHandler{
 		SigningKey:       config.SlackSigningKey,
 		Hostname:         config.Hostname,
