@@ -6,7 +6,7 @@
 		{
 			"label": "delve REPL remote",
 			"type": "shell",
-			"command": "dlv --headless --listen=127.0.0.1:2345 debug cmd/repl/main.go",
+			"command": "dlv --headless --listen=127.0.0.1:2345 --api-version=2 debug cmd/repl/main.go",
 			"isBackground": true,
 			// This task is run before some debug tasks.
 			// Problem is, it's a watch script, and since it never exits, VSCode

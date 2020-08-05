@@ -12,8 +12,7 @@
 			"remotePath": "${workspaceFolder}",
 			"port": 2345,
 			"host": "127.0.0.1",
-			// I have version 1 installed for now, change to 2 if you have the newer `dlv`
-			"apiVersion": 1,
+			"apiVersion": 2,
 			"preLaunchTask": "delve REPL remote"
 		},
 		{
