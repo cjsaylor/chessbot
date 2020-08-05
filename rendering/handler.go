@@ -54,5 +54,6 @@ func (b BoardRenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	w.Header().Add("Cache-Control", "max-age=7776000")
 	png.Encode(w, image)
 }
