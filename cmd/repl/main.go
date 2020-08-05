@@ -44,8 +44,8 @@ func main() {
 	}
 	var gm *game.Game
 	players := []game.Player{
-		game.Player{ID: "player1"},
-		game.Player{ID: "player2"},
+		{ID: "player1"},
+		{ID: "player2"},
 	}
 	if string(initialState) != "" {
 		var err error
