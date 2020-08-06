@@ -78,6 +78,30 @@ GET /analyze?game_id=
 
 * This endpoint is used to generate an analysis of a game. It will redirect the user upon successful import to an analysis provider.
 
+## Testing with Slack
+
+In order to do end-to-end testing with Slack, you will need to use a service that exposes your environment to Slack to allow webhooks to enter your application.
+I use [ngrok](https://ngrok.com/), but any local tunnelling software should work.
+
+Because our application needs to know what the external hostname is, you'll need to start the tunneling service first to get a provided hostname from the service:
+
+```bash
+ngrok http 8080
+```
+
+The `8080` port is what we specify by default in `.env`.
+Once the service is started and established, copy the hostname into `.env` for `HOSTNAME` environment variable, then start the application.
+
+You will then need to enter the hostname into slack and allow them to prob your application with a challenge to ensure your app is authorized with the correct API tokens.
+
+![](./doc/slack_integration/event_subscriptions.png)
+
+Finally, configure the interactive components to point to the action endpoint:
+
+![](./doc/slack_integration/interactive_components.png)
+
+See the [Slack integration docs](./doc/slack_integration/README.md) for more info.
+
 ## Testing the Chess Engine
 
 ```
