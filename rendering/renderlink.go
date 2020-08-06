@@ -30,7 +30,7 @@ func (r RenderLink) CreateLink(gm *game.Game) (*url.URL, error) {
 			check = square.String()
 		}
 	}
-	u, _ := url.Parse(fmt.Sprintf("%v/board", r.hostName))
+	u, _ := url.Parse(fmt.Sprintf("%v/board.png", r.hostName))
 	q := u.Query()
 	q.Add("fen", fen)
 	q.Add("signature", hex.EncodeToString(sig.Sum(nil)))
