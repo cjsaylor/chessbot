@@ -206,7 +206,11 @@ func (s SlackHandler) handleChallengeCommand(gameID string, command *ChallengeCo
 		s.sendErrorWithHelp(gameID, ev.Channel, "A game already exists in this thread. Try making a new thread.")
 		return
 	}
-	_, _, channelID, err := s.SlackClient.OpenIMChannel(command.ChallengedID)
+	channel, _, _, err := s.SlackClient.OpenConversation(&slack.OpenConversationParameters{
+		ChannelID: "",
+		ReturnIM:  false,
+		Users:     []string{command.ChallengedID},
+	})
 	if err != nil {
 		log.Printf("unable to challenge %v: %v", command.ChallengedID, err)
 		s.sendError(gameID, ev.Channel, "Unable to challenge that player.")
@@ -220,7 +224,7 @@ func (s SlackHandler) handleChallengeCommand(gameID string, command *ChallengeCo
 	}
 	s.ChallengeStorage.StoreChallenge(challenge)
 	s.SlackClient.PostMessage(
-		channelID,
+		channel.ID,
 		slack.MsgOptionText(fmt.Sprintf("<@%v> has challenged you to a game of chess!", ev.User), false),
 		slack.MsgOptionAttachments(slack.Attachment{
 			Text:       "Do you accept?",
