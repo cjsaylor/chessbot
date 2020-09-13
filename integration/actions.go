@@ -81,7 +81,7 @@ func (s SlackActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if event.Actions[0].Value != "accept" {
 		s.SlackClient.PostMessage(
-			challenge.GameID,
+			challenge.ChannelID,
 			slack.MsgOptionText("Challenge declined by player.", false),
 			slack.MsgOptionTS(challenge.GameID))
 		s.sendResponse(w, event.OriginalMessage, "Declined.")
