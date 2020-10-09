@@ -3,7 +3,7 @@ module github.com/cjsaylor/chessbot
 go 1.12
 
 require (
-	github.com/caarlos0/env v3.3.0+incompatible
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/cjsaylor/chessimage v0.0.0-20190107020940-8abad33612f4
 	github.com/flopp/go-findfont v0.0.0-20180308170802-e788239e52bc // indirect
 	github.com/fogleman/gg v1.1.0 // indirect
