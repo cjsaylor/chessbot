@@ -260,6 +260,12 @@ var ErrPlayerAlreadyMoved = errors.New("other player has already made a move")
 // ErrPastTimeThreshold is an error representing an action that failed due to taking place after a specific threshold
 var ErrPastTimeThreshold = fmt.Errorf("exceeded threshold of %v", TakebackThreshold)
 
+// IsPastTakebackThreshold determines if the last move is within the allowable takeback time period.
+func (g *Game) IsPastTakebackThreshold() bool {
+	elapsed := g.timeProvider().Sub(g.LastMoved())
+	return elapsed <= TakebackThreshold
+}
+
 // Takeback reverts the game to the previous move prior to the last move.
 // Note: If the first move of the game is taken back, the resulting move will be nil
 func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
@@ -272,9 +278,6 @@ func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
 	turnPlayer := g.TurnPlayer()
 	if requestingPlayer.ID == turnPlayer.ID {
 		return nil, ErrPlayerAlreadyMoved
-	}
-	if elapsed := g.timeProvider().Sub(g.LastMoved()); elapsed > TakebackThreshold {
-		return nil, ErrPastTimeThreshold
 	}
 	newGame := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	moves := g.game.Moves()

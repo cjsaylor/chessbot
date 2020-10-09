@@ -276,6 +276,10 @@ func (s SlackHandler) handleTakebackCommand(gameID string, ev *slackevents.AppMe
 		s.sendError(gameID, ev.Channel, "I couldn't find you as part of this game.")
 		return
 	}
+	if gm.IsPastTakebackThreshold() {
+		s.sendError(gameID, ev.Channel, fmt.Sprint(game.ErrPastTimeThreshold))
+		return
+	}
 	chessMove, err := gm.Takeback(player)
 	if err != nil {
 		s.sendError(gameID, ev.Channel, fmt.Sprintf("Take back request failed: %v", err))

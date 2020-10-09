@@ -79,19 +79,16 @@ func TestTakebackRequestWithinThreshold(t *testing.T) {
 	gm.SetTimeProvider(func() time.Time {
 		return now
 	})
-	takebackPlayer := gm.TurnPlayer()
 	gm.Move("d2d4")
-	if _, err := gm.Takeback(&takebackPlayer); err != nil {
-		t.Error(err)
-		t.Error("expected the takeback request to succeed")
+	if withinThreshold := gm.IsPastTakebackThreshold(); !withinThreshold {
+		t.Error("expected response to be true, got false")
 	}
 	gm.Move("d2d4")
 	gm.SetTimeProvider(func() time.Time {
 		return now.Add(game.TakebackThreshold + time.Second)
 	})
-	_, err := gm.Takeback(&takebackPlayer)
-	if err != game.ErrPastTimeThreshold {
-		t.Errorf("expected a takeback threshold exceeded error, got %v", err)
+	if withinThreshold := gm.IsPastTakebackThreshold(); withinThreshold {
+		t.Error("expected response to be false, got true")
 	}
 }
 
