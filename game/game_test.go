@@ -113,7 +113,7 @@ func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 	}
 	gm.Move("d7d5")
 	gm.Takeback(&otherTakebackPlayer)
-	if isWithinThreshold := gm.IsPastTakebackThreshold(); isWithinThreshold {
+	if isPastThreshold := gm.IsPastTakebackThreshold(); !isPastThreshold {
 		t.Error("expected a time threshold error due to the previous takeback wiping out the last moved time period")
 	}
 }

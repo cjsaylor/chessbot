@@ -286,7 +286,7 @@ func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
 	}
 	g.game = newGame
 	// Prevent cascading takebacks
-	g.lastMoved = time.Time{}
+	g.lastMoved = g.timeProvider().Add(-TakebackThreshold - time.Second)
 	return g.LastMove(), nil
 }
 
