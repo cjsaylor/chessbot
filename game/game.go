@@ -262,7 +262,7 @@ var ErrPastTimeThreshold = fmt.Errorf("exceeded threshold of %v", TakebackThresh
 
 // IsPastTakebackThreshold determines if the last move is within the allowable takeback time period.
 func (g *Game) IsPastTakebackThreshold() bool {
-	return g.timeProvider().Sub(g.LastMoved()) <= TakebackThreshold
+	return g.timeProvider().Sub(g.LastMoved()) > TakebackThreshold
 }
 
 // Takeback reverts the game to the previous move prior to the last move.
