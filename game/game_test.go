@@ -151,3 +151,18 @@ func TestTakebackRequestWithNoMoves(t *testing.T) {
 		t.Error("expected the takeback to fail due to not having any moves in the game yet")
 	}
 }
+
+func TestGetOtherPlayer(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	turnPlayer := gm.TurnPlayer()
+	if otherPlayer := gm.OtherPlayer(&turnPlayer); otherPlayer.ID == turnPlayer.ID {
+		t.Error("expected a different player than the current turn player")
+	}
+}

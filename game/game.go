@@ -142,6 +142,16 @@ func (g *Game) TurnPlayer() Player {
 	return g.Players[g.Turn()]
 }
 
+// OtherPlayer returns ...the other player given a player
+func (g *Game) OtherPlayer(player *Player) *Player {
+	for _, other := range g.Players {
+		if other.ID != player.ID {
+			return &other
+		}
+	}
+	return nil
+}
+
 // Turn returns which color should move next
 func (g *Game) Turn() Color {
 	switch g.game.Position().Turn() {
