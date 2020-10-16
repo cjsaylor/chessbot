@@ -14,10 +14,10 @@ func init() {
 
 func TestExport(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -32,10 +32,10 @@ func TestExport(t *testing.T) {
 
 func TestExportAndMoveMore(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -50,10 +50,10 @@ func TestExportAndMoveMore(t *testing.T) {
 
 func TestLastMoveTimeRecorded(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -68,10 +68,10 @@ func TestLastMoveTimeRecorded(t *testing.T) {
 
 func TestTakebackRequestWithinThreshold(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -93,10 +93,10 @@ func TestTakebackRequestWithinThreshold(t *testing.T) {
 
 func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -120,10 +120,10 @@ func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 
 func TestTakebackRequestWithCompletedGame(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -138,10 +138,10 @@ func TestTakebackRequestWithCompletedGame(t *testing.T) {
 
 func TestTakebackRequestWithNoMoves(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)

@@ -19,6 +19,7 @@ type Challenge struct {
 	ChannelID    string
 }
 
+// Color represents the game color (white/black)
 type Color string
 
 // White represents the color of the white set.
@@ -102,6 +103,7 @@ func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 	return game, nil
 }
 
+// NewGameFromPGN will create a new game at the state expressed by a provided PGN
 func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, error) {
 	reader := strings.NewReader(pgn)
 	gameState, err := chess.PGN(reader)
