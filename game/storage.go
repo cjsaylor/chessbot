@@ -12,3 +12,10 @@ type ChallengeStorage interface {
 	StoreChallenge(challenge *Challenge) error
 	RemoveChallenge(challengerID string, challengedID string) error
 }
+
+// TakebackStorage is an interface to be implemented for persisting takeback requests.
+type TakebackStorage interface {
+	RetrieveTakeback(gameID string) (*Takeback, error)
+	StoreTakeback(takeback *Takeback) error
+	RemoveTakeback(takeback *Takeback) error
+}

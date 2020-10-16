@@ -29,6 +29,13 @@ const challengeTableCreation = `
 	);
 `
 
+const takebackTableCreation = `
+	CREATE TABLE IF NOT EXISTS takebacks (
+		game_id text PRIMARY KEY,
+		fen_snapshot text NOT NULL
+	);
+`
+
 // SqliteStore is an implementation of GameStorage and ChallengeStorage interfaces that persists using sqlite3
 type SqliteStore struct {
 	path string
@@ -50,6 +57,9 @@ func NewSqliteStore(path string) (*SqliteStore, error) {
 		return nil, err
 	}
 	if _, err = db.Exec(challengeTableCreation); err != nil {
+		return nil, err
+	}
+	if _, err = db.Exec(takebackTableCreation); err != nil {
 		return nil, err
 	}
 	store.db = db
@@ -123,5 +133,47 @@ func (s *SqliteStore) RemoveChallenge(challengerID string, challengedID string) 
 	stmt, _ := s.db.Prepare("delete from challenges where challenger_id = ? and challenged_id = ?")
 	defer stmt.Close()
 	_, err := stmt.Exec(challengerID, challengedID)
+	return err
+}
+
+// StoreTakeback stores a takeback request
+// Note: This will overwrite a takeback request if a previous request is left open
+func (s *SqliteStore) StoreTakeback(takeback *Takeback) error {
+	stmt, _ := s.db.Prepare(`
+	insert into takebacks (game_id, fen_snapshot) values (?, ?)
+	on conflict (game_id) do update set
+		fen_snapshot = ?
+	`)
+	defer stmt.Close()
+	_, err := stmt.Exec(
+		takeback.CurrentGame.ID,
+		takeback.CurrentGame.FEN(),
+		takeback.CurrentGame.FEN(),
+	)
+	return err
+}
+
+// RetrieveTakeback finds a takeback request by a game ID
+func (s *SqliteStore) RetrieveTakeback(gameID string) (*Takeback, error) {
+	game, err := s.RetrieveGame(gameID)
+	if err != nil {
+		return nil, err
+	}
+	stmt, _ := s.db.Prepare("select fen_snapshot from takebacks where game_id = ?")
+	defer stmt.Close()
+	takeback := Takeback{
+		CurrentGame: game,
+		FENSnapshot: "",
+	}
+	row := stmt.QueryRow(gameID)
+	err = row.Scan(&takeback.FENSnapshot)
+	return &takeback, err
+}
+
+// RemoveTakeback removes a takeback request from storage
+func (s *SqliteStore) RemoveTakeback(takeback *Takeback) error {
+	stmt, _ := s.db.Prepare("delete from takebacks where game_id = ?")
+	defer stmt.Close()
+	_, err := stmt.Exec(takeback.CurrentGame.ID)
 	return err
 }
