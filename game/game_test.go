@@ -166,3 +166,42 @@ func TestGetOtherPlayer(t *testing.T) {
 		t.Error("expected a different player than the current turn player")
 	}
 }
+
+func TestExtendedTakebackRequestAllowed(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	gm.Move("d2d4")
+	now := time.Now()
+	gm.SetTimeProvider(func() time.Time {
+		return now.Add(game.TakebackThreshold + time.Second)
+	})
+	turnPlayer := gm.TurnPlayer()
+	requester := gm.OtherPlayer(&turnPlayer)
+	if !gm.IsExtendedTakebackAllowed(requester) {
+		t.Error("expected extended takeback to be allowed")
+	}
+}
+
+func TestTakebackSnapshotValidation(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	gm.Move("d2d4")
+	takeback := game.NewTakeback(gm)
+	gm.Move("d7d5")
+	if takeback.IsValidTakeback() {
+		t.Error("expected not to be a valid takeback since the signature of the game has been altered")
+	}
+
+}
