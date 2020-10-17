@@ -25,6 +25,7 @@ func main() {
 	}
 	var gameStorage game.GameStorage
 	var challengeStorage game.ChallengeStorage
+	var takebackStorage game.TakebackStorage
 	var authStorage integration.AuthStorage
 	if config.SqlitePath != "" {
 		gameSQLStore, err := game.NewSqliteStore(config.SqlitePath)
@@ -32,13 +33,18 @@ func main() {
 			log.Fatal(err)
 		}
 		authSQLStore, err := integration.NewSqliteStore(config.SqlitePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 		gameStorage = gameSQLStore
 		challengeStorage = gameSQLStore
+		takebackStorage = gameSQLStore
 		authStorage = authSQLStore
 	} else {
 		memoryStore := game.NewMemoryStore()
 		gameStorage = memoryStore
 		challengeStorage = memoryStore
+		takebackStorage = memoryStore
 		authStorage = integration.NewMemoryStore()
 	}
 	renderLink := rendering.NewRenderLink(config.Hostname, config.SigningKey)
@@ -55,6 +61,7 @@ func main() {
 		AuthStorage:      authStorage,
 		GameStorage:      gameStorage,
 		ChallengeStorage: challengeStorage,
+		TakebackStorage:  takebackStorage,
 		LinkRenderer:     renderLink,
 	})
 	http.Handle("/slack/action", integration.SlackActionHandler{
@@ -63,6 +70,7 @@ func main() {
 		AuthStorage:      authStorage,
 		GameStorage:      gameStorage,
 		ChallengeStorage: challengeStorage,
+		TakebackStorage:  takebackStorage,
 		LinkRenderer:     renderLink,
 	})
 	http.Handle("/slack/oauth", integration.SlackOauthHandler{

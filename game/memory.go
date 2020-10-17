@@ -9,6 +9,7 @@ import (
 type MemoryStore struct {
 	games      map[string]*Game
 	challenges map[string]*Challenge
+	takebacks  map[string]*Takeback
 }
 
 // NewMemoryStore returns a MemoryStore pointer
@@ -55,5 +56,26 @@ func (m *MemoryStore) StoreChallenge(c *Challenge) error {
 func (m *MemoryStore) RemoveChallenge(challengerID string, challengedID string) error {
 	key := challengerID + challengedID
 	delete(m.challenges, key)
+	return nil
+}
+
+// StoreTakeback stores a takeback request
+func (m *MemoryStore) StoreTakeback(takeback *Takeback) error {
+	key := takeback.CurrentGame.ID
+	m.takebacks[key] = takeback
+	return nil
+}
+
+// RetrieveTakeback finds a takeback request by a game ID
+func (m *MemoryStore) RetrieveTakeback(gameID string) (*Takeback, error) {
+	if takeback, ok := m.takebacks[gameID]; ok {
+		return takeback, nil
+	}
+	return nil, fmt.Errorf("Takeback not found for provided game ID")
+}
+
+// RemoveTakeback removes a takeback request from storage
+func (m *MemoryStore) RemoveTakeback(takeback *Takeback) error {
+	delete(m.takebacks, takeback.CurrentGame.ID)
 	return nil
 }

@@ -19,6 +19,7 @@ type Challenge struct {
 	ChannelID    string
 }
 
+// Color represents the game color (white/black)
 type Color string
 
 // White represents the color of the white set.
@@ -102,6 +103,7 @@ func NewGameFromFEN(ID string, fen string, players ...Player) (*Game, error) {
 	return game, nil
 }
 
+// NewGameFromPGN will create a new game at the state expressed by a provided PGN
 func NewGameFromPGN(ID string, pgn string, white Player, black Player) (*Game, error) {
 	reader := strings.NewReader(pgn)
 	gameState, err := chess.PGN(reader)
@@ -140,6 +142,16 @@ func (g *Game) Resign(resigner Player) {
 // TurnPlayer returns which player should move next
 func (g *Game) TurnPlayer() Player {
 	return g.Players[g.Turn()]
+}
+
+// OtherPlayer returns ...the other player given a player
+func (g *Game) OtherPlayer(player *Player) *Player {
+	for _, other := range g.Players {
+		if other.ID != player.ID {
+			return &other
+		}
+	}
+	return nil
 }
 
 // Turn returns which color should move next
@@ -260,6 +272,17 @@ var ErrPlayerAlreadyMoved = errors.New("other player has already made a move")
 // ErrPastTimeThreshold is an error representing an action that failed due to taking place after a specific threshold
 var ErrPastTimeThreshold = fmt.Errorf("exceeded threshold of %v", TakebackThreshold)
 
+// IsPastTakebackThreshold determines if the last move is within the allowable takeback time period.
+func (g *Game) IsPastTakebackThreshold() bool {
+	return g.timeProvider().Sub(g.LastMoved()) > TakebackThreshold
+}
+
+// IsExtendedTakebackAllowed determines if a player may request a take back after
+// the time threshold has expired
+func (g *Game) IsExtendedTakebackAllowed(requestingPlayer *Player) bool {
+	return g.IsPastTakebackThreshold() && requestingPlayer.ID != g.TurnPlayer().ID
+}
+
 // Takeback reverts the game to the previous move prior to the last move.
 // Note: If the first move of the game is taken back, the resulting move will be nil
 func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
@@ -273,9 +296,6 @@ func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
 	if requestingPlayer.ID == turnPlayer.ID {
 		return nil, ErrPlayerAlreadyMoved
 	}
-	if elapsed := g.timeProvider().Sub(g.LastMoved()); elapsed > TakebackThreshold {
-		return nil, ErrPastTimeThreshold
-	}
 	newGame := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	moves := g.game.Moves()
 	withoutLast := moves[:len(moves)-1]
@@ -284,7 +304,7 @@ func (g *Game) Takeback(requestingPlayer *Player) (*chess.Move, error) {
 	}
 	g.game = newGame
 	// Prevent cascading takebacks
-	g.lastMoved = time.Time{}
+	g.lastMoved = g.timeProvider().Add(-TakebackThreshold - time.Second)
 	return g.LastMove(), nil
 }
 
@@ -296,4 +316,23 @@ func (g *Game) SetTimeProvider(provider TimeProvider) {
 // String representation of the current game state (draws an ascii board)
 func (g *Game) String() string {
 	return g.game.Position().Board().Draw()
+}
+
+// Takeback represents a takeback request
+type Takeback struct {
+	CurrentGame *Game
+	FENSnapshot string
+}
+
+// NewTakeback constructs a new takeback request
+func NewTakeback(game *Game) *Takeback {
+	return &Takeback{
+		CurrentGame: game,
+		FENSnapshot: game.FEN(),
+	}
+}
+
+// IsValidTakeback determines if this takeback request is valid
+func (t *Takeback) IsValidTakeback() bool {
+	return t.CurrentGame.FEN() == t.FENSnapshot
 }

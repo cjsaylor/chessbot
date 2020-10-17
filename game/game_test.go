@@ -14,10 +14,10 @@ func init() {
 
 func TestExport(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -32,10 +32,10 @@ func TestExport(t *testing.T) {
 
 func TestExportAndMoveMore(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -50,10 +50,10 @@ func TestExportAndMoveMore(t *testing.T) {
 
 func TestLastMoveTimeRecorded(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -68,10 +68,10 @@ func TestLastMoveTimeRecorded(t *testing.T) {
 
 func TestTakebackRequestWithinThreshold(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -79,28 +79,24 @@ func TestTakebackRequestWithinThreshold(t *testing.T) {
 	gm.SetTimeProvider(func() time.Time {
 		return now
 	})
-	takebackPlayer := gm.TurnPlayer()
 	gm.Move("d2d4")
-	if _, err := gm.Takeback(&takebackPlayer); err != nil {
-		t.Error(err)
-		t.Error("expected the takeback request to succeed")
+	if pastThreshold := gm.IsPastTakebackThreshold(); pastThreshold {
+		t.Error("expected response to be false, got true")
 	}
-	gm.Move("d2d4")
 	gm.SetTimeProvider(func() time.Time {
 		return now.Add(game.TakebackThreshold + time.Second)
 	})
-	_, err := gm.Takeback(&takebackPlayer)
-	if err != game.ErrPastTimeThreshold {
-		t.Errorf("expected a takeback threshold exceeded error, got %v", err)
+	if pastThreshold := gm.IsPastTakebackThreshold(); !pastThreshold {
+		t.Error("expected response to be true, got false")
 	}
 }
 
 func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -117,18 +113,17 @@ func TestTakebackRequestWithCorrectPlayer(t *testing.T) {
 	}
 	gm.Move("d7d5")
 	gm.Takeback(&otherTakebackPlayer)
-	if _, err := gm.Takeback(&takebackPlayer); err != game.ErrPastTimeThreshold {
-		t.Error(err)
+	if isPastThreshold := gm.IsPastTakebackThreshold(); !isPastThreshold {
 		t.Error("expected a time threshold error due to the previous takeback wiping out the last moved time period")
 	}
 }
 
 func TestTakebackRequestWithCompletedGame(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -143,10 +138,10 @@ func TestTakebackRequestWithCompletedGame(t *testing.T) {
 
 func TestTakebackRequestWithNoMoves(t *testing.T) {
 	gm := game.NewGame("1234", []game.Player{
-		game.Player{
+		{
 			ID: "a",
 		},
-		game.Player{
+		{
 			ID: "b",
 		},
 	}...)
@@ -155,4 +150,58 @@ func TestTakebackRequestWithNoMoves(t *testing.T) {
 		t.Error(err)
 		t.Error("expected the takeback to fail due to not having any moves in the game yet")
 	}
+}
+
+func TestGetOtherPlayer(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	turnPlayer := gm.TurnPlayer()
+	if otherPlayer := gm.OtherPlayer(&turnPlayer); otherPlayer.ID == turnPlayer.ID {
+		t.Error("expected a different player than the current turn player")
+	}
+}
+
+func TestExtendedTakebackRequestAllowed(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	gm.Move("d2d4")
+	now := time.Now()
+	gm.SetTimeProvider(func() time.Time {
+		return now.Add(game.TakebackThreshold + time.Second)
+	})
+	turnPlayer := gm.TurnPlayer()
+	requester := gm.OtherPlayer(&turnPlayer)
+	if !gm.IsExtendedTakebackAllowed(requester) {
+		t.Error("expected extended takeback to be allowed")
+	}
+}
+
+func TestTakebackSnapshotValidation(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	gm.Move("d2d4")
+	takeback := game.NewTakeback(gm)
+	gm.Move("d7d5")
+	if takeback.IsValidTakeback() {
+		t.Error("expected not to be a valid takeback since the signature of the game has been altered")
+	}
+
 }

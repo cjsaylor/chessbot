@@ -24,6 +24,7 @@ type SlackHandler struct {
 	AuthStorage      AuthStorage
 	GameStorage      game.GameStorage
 	ChallengeStorage game.ChallengeStorage
+	TakebackStorage  game.TakebackStorage
 	LinkRenderer     rendering.RenderLink
 }
 
@@ -274,6 +275,38 @@ func (s SlackHandler) handleTakebackCommand(gameID string, ev *slackevents.AppMe
 	player, err := gm.PlayerByID(ev.User)
 	if err != nil {
 		s.sendError(gameID, ev.Channel, "I couldn't find you as part of this game.")
+		return
+	}
+	if gm.IsExtendedTakebackAllowed(player) {
+		s.TakebackStorage.StoreTakeback(game.NewTakeback(gm))
+		s.SlackClient.PostEphemeral(ev.Channel, gm.TurnPlayer().ID, slack.MsgOptionTS(ev.TimeStamp), slack.MsgOptionAttachments(
+			slack.Attachment{
+				Text:       fmt.Sprintf("<@%v> has requested a takeback.", ev.User),
+				Fallback:   "Unable to request a takeback.",
+				CallbackID: "takeback_response",
+				Actions: []slack.AttachmentAction{
+					{
+						Name:  gameID,
+						Text:  "Allow Takeback",
+						Type:  "button",
+						Value: "allow",
+					},
+					{
+						Name:  gameID,
+						Text:  "Decline",
+						Type:  "button",
+						Style: "danger",
+						Value: "decline",
+					},
+				},
+			},
+		))
+		s.SlackClient.PostEphemeral(
+			ev.Channel,
+			ev.User,
+			slack.MsgOptionTS(ev.TimeStamp),
+			slack.MsgOptionText(fmt.Sprintf("Take back request sent to <@%v>", gm.TurnPlayer().ID), false),
+		)
 		return
 	}
 	chessMove, err := gm.Takeback(player)
