@@ -301,6 +301,12 @@ func (s SlackHandler) handleTakebackCommand(gameID string, ev *slackevents.AppMe
 				},
 			},
 		))
+		s.SlackClient.PostEphemeral(
+			ev.Channel,
+			ev.User,
+			slack.MsgOptionTS(ev.TimeStamp),
+			slack.MsgOptionText(fmt.Sprintf("Take back request sent to <@%v>", gm.TurnPlayer().ID), false),
+		)
 		return
 	}
 	chessMove, err := gm.Takeback(player)
