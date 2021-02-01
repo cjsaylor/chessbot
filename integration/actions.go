@@ -11,8 +11,8 @@ import (
 
 	"github.com/cjsaylor/chessbot/game"
 	"github.com/cjsaylor/chessbot/rendering"
-	"github.com/nlopes/slack"
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 )
 
 var challengerPattern = regexp.MustCompile("^<@([\\w|\\d]+).*$")
