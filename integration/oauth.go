@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 // SlackOauthHandler will respond to all Slack authorization callbacks
