@@ -79,6 +79,12 @@ func main() {
 		SlackAppID:        config.SlackAppID,
 		AuthStore:         authStorage,
 	})
+	http.Handle("/slack/oauth/v2", integration.SlackV2OauthHandler{
+		SlackClientID:     config.SlackClientID,
+		SlackClientSecret: config.SlackClientSecret,
+		SlackAppID:        config.SlackAppID,
+		AuthStore:         authStorage,
+	})
 	log.Printf("Listening on port %v\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Port), nil))
 }
