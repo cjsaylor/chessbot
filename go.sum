@@ -16,8 +16,8 @@ github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 h1:AsEBgzv3DhuYH
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5/go.mod h1:c2mYKRyMb1BPkO5St0c/ps62L4S0W2NAkaTXj9qEI+0=
 github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 h1:iOAVXzZyXtW408TMYejlUPo6BIn92HmOacWtIfNyYns=
 github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6/go.mod h1:sFlOUpQL1YcjhFVXhg1CG8ZASEs/Mf1oVb6H75JL/zg=
-github.com/mattn/go-sqlite3 v1.9.0 h1:pDRiWfl+++eC2FEFRy6jXmQlvp4Yh3z1MJKg4UeYM/4=
-github.com/mattn/go-sqlite3 v1.9.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
+github.com/mattn/go-sqlite3 v1.14.5 h1:1IdxlwTNazvbKJQSxoJ5/9ECbEeaTTyeU7sEAZ5KKTQ=
+github.com/mattn/go-sqlite3 v1.14.5/go.mod h1:WVKg1VTActs4Qso6iwGbiFih2UIHo0ENGwNd0Lj+XmI=
 github.com/nlopes/slack v0.5.0 h1:NbIae8Kd0NpqaEI3iUrsuS0KbcEDhzhc939jLW5fNm0=
 github.com/nlopes/slack v0.5.0/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/notnil/chess v0.0.0-20181214160432-429595102215 h1:goyOz2Piqvtv4vbLOA4GckV3tiLXtY7iYmS4K5F8yNc=
