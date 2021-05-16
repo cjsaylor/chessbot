@@ -21,6 +21,14 @@ type AppMentionEvent struct {
 	EventTimeStamp  json.Number `json:"event_ts"`
 }
 
+// AppHomeOpenedEvent Your Slack app home was opened.
+type AppHomeOpenedEvent struct {
+	Type           string      `json:"type"`
+	User           string      `json:"user"`
+	Channel        string      `json:"channel"`
+	EventTimeStamp json.Number `json:"event_ts"`
+}
+
 // AppUninstalledEvent Your Slack app was uninstalled.
 type AppUninstalledEvent struct {
 	Type string `json:"type"`
@@ -112,6 +120,17 @@ type PinAddedEvent pinEvent
 
 // PinRemovedEvent An item was unpinned from a channel - https://api.slack.com/events/pin_removed
 type PinRemovedEvent pinEvent
+
+type tokens struct {
+	Oauth []string `json:"oauth"`
+	Bot   []string `json:"bot"`
+}
+
+// TokensRevokedEvent APP's API tokes are revoked - https://api.slack.com/events/tokens_revoked
+type TokensRevokedEvent struct {
+	Type   string `json:"type"`
+	Tokens tokens `json:"tokens"`
+}
 
 // JSONTime exists so that we can have a String method converting the date
 type JSONTime int64
@@ -217,6 +236,8 @@ func (e MessageEvent) IsEdited() bool {
 const (
 	// AppMention is an Events API subscribable event
 	AppMention = "app_mention"
+	// AppHomeOpened Your Slack app home was opened
+	AppHomeOpened = "app_home_opened"
 	// AppUninstalled Your Slack app was uninstalled.
 	AppUninstalled = "app_uninstalled"
 	// GridMigrationFinished An enterprise grid migration has finished on this workspace.
@@ -233,6 +254,8 @@ const (
 	PinAdded = "pin_added"
 	// PinRemoved An item was unpinned from a channel
 	PinRemoved = "pin_removed"
+	// TokensRevoked APP's API tokes are revoked
+	TokensRevoked = "tokens_revoked"
 )
 
 // EventsAPIInnerEventMapping maps INNER Event API events to their corresponding struct
@@ -240,6 +263,7 @@ const (
 // target for the matching event type.
 var EventsAPIInnerEventMapping = map[string]interface{}{
 	AppMention:            AppMentionEvent{},
+	AppHomeOpened:         AppHomeOpenedEvent{},
 	AppUninstalled:        AppUninstalledEvent{},
 	GridMigrationFinished: GridMigrationFinishedEvent{},
 	GridMigrationStarted:  GridMigrationStartedEvent{},
@@ -248,4 +272,5 @@ var EventsAPIInnerEventMapping = map[string]interface{}{
 	MemberJoinedChannel:   MemberJoinedChannelEvent{},
 	PinAdded:              PinAddedEvent{},
 	PinRemoved:            PinRemovedEvent{},
+	TokensRevoked:         TokensRevokedEvent{},
 }
