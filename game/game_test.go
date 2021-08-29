@@ -205,3 +205,22 @@ func TestTakebackSnapshotValidation(t *testing.T) {
 	}
 
 }
+
+func TestCaseInsensitiveMoves(t *testing.T) {
+	gm := game.NewGame("1234", []game.Player{
+		{
+			ID: "a",
+		},
+		{
+			ID: "b",
+		},
+	}...)
+	gm.Move("D2d4")
+	gm.Move("d7D5")
+	gm.Move("E2E4")
+	result := gm.Export()
+	expected := "[Site \"Slack ChessBot match\"]\n[White \"a\"]\n[Black \"b\"]\n\n1.d4 d5 2.e4  *"
+	if result != expected {
+		t.Errorf("expected %v got %v", expected, result)
+	}
+}
