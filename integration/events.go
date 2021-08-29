@@ -40,7 +40,7 @@ var slackCommandPatterns = []CommandPattern{
 	},
 	{
 		Type:    Move,
-		Pattern: regexp.MustCompile("^<@[\\w|\\d]+> .*([a-h][1-8][a-h][1-8][qnrb]?).*$"),
+		Pattern: regexp.MustCompile("^<@[\\w|\\d]+> .*([a-hA-H][1-8][a-hA-H][1-8][qnrb]?).*$"),
 	},
 	{
 		Type:    Resign,
