@@ -61,7 +61,7 @@ func main() {
 	inputParser := integration.NewCommandParser([]integration.CommandPattern{
 		{
 			Type:    integration.Move,
-			Pattern: regexp.MustCompile("^.*([a-hA-h][1-8][a-hA-h][1-8][qnrb]?).*$"),
+			Pattern: regexp.MustCompile("^.*([a-hA-H][1-8][a-hA-H][1-8][qnrb]?).*$"),
 		},
 		{
 			Type:    integration.Resign,
