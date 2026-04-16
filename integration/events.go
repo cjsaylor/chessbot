@@ -113,10 +113,14 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(r.Challenge))
 	} else if event.Type == slackevents.CallbackEvent {
 		if s.SlackClient == nil {
+			debugf("looking up auth token for team=%s", event.TeamID)
 			botToken, err := s.AuthStorage.GetAuthToken(event.TeamID)
 			if err != nil {
-				log.Panicln(err)
+				log.Printf("failed to get auth token for team %s: %v", event.TeamID, err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
 			}
+			debugf("auth token retrieved for team=%s (token length=%d)", event.TeamID, len(botToken))
 			s.SlackClient = slack.New(botToken)
 		}
 		innerEvent := event.InnerEvent

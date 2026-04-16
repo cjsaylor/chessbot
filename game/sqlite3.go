@@ -42,6 +42,11 @@ type SqliteStore struct {
 	db   *sql.DB
 }
 
+// DB returns the underlying *sql.DB connection for sharing with other stores.
+func (s *SqliteStore) DB() *sql.DB {
+	return s.db
+}
+
 // NewSqliteStore creates (if not exists) the DB file and structure at the path specified
 // It implements the GameStorage and ChallengeStorage interface and is intended as a suitable
 // perminent storage of games and challenges

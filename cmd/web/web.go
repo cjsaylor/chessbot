@@ -32,7 +32,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		authSQLStore, err := integration.NewSqliteStore(config.SqlitePath)
+		authSQLStore, err := integration.NewSqliteStoreWithDB(gameSQLStore.DB())
 		if err != nil {
 			log.Fatal(err)
 		}
