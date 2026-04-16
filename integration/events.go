@@ -120,6 +120,7 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			s.SlackClient = slack.New(botToken)
 		}
 		innerEvent := event.InnerEvent
+		debugf("inner event type=%s data=%T", innerEvent.Type, innerEvent.Data)
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.MessageEvent:
 			matched := slackCommandParser.ParseInput(ev.Text)
