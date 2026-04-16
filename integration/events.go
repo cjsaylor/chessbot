@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/cjsaylor/chessbot/game"
@@ -15,6 +16,14 @@ import (
 	"github.com/nlopes/slack/slackevents"
 	"github.com/notnil/chess"
 )
+
+var debugLog = os.Getenv("CHESSBOT_DEBUG") != ""
+
+func debugf(format string, args ...interface{}) {
+	if debugLog {
+		log.Printf("[DEBUG] "+format, args...)
+	}
+}
 
 // SlackHandler will respond to all Slack event callback subscriptions
 type SlackHandler struct {
@@ -85,12 +94,14 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	debugf("incoming request: method=%s content-length=%d", r.Method, r.ContentLength)
 	event, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionNoVerifyToken())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err)
 		return
 	}
+	debugf("parsed event: type=%s team=%s", event.Type, event.TeamID)
 	if event.Type == slackevents.URLVerification {
 		var r *slackevents.ChallengeResponse
 		err := json.Unmarshal([]byte(body), &r)
@@ -119,18 +130,27 @@ func (s SlackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					slack.MsgOptionAttachments(getHelpAttachments()...))
 			}
 		case *slackevents.AppMentionEvent:
+			debugf("app_mention event: user=%s channel=%s text=%q ts=%s thread_ts=%s", ev.User, ev.Channel, ev.Text, ev.TimeStamp, ev.ThreadTimeStamp)
 			var gameID string
 			if ev.ThreadTimeStamp == "" {
 				gameID = ev.TimeStamp
 			} else {
 				gameID = ev.ThreadTimeStamp
 			}
+			debugf("resolved gameID=%s", gameID)
 			matched := slackCommandParser.ParseInput(ev.Text)
+			debugf("command parse result: type=%d params=%v", matched.Type, matched.Params)
 			switch matched.Type {
 			case Unknown:
 				s.sendErrorWithHelp(gameID, ev.Channel, "Sorry, I don't understand what you said.")
 			case Challenge:
-				challengeCommand, _ := matched.ToChallenge()
+				challengeCommand, err := matched.ToChallenge()
+				if err != nil {
+					log.Printf("failed to parse challenge command: %v", err)
+					s.sendError(gameID, ev.Channel, "To challenge a player, mention me and say \"challenge @player\".")
+					return
+				}
+				debugf("challenge command: challengedID=%s", challengeCommand.ChallengedID)
 				s.handleChallengeCommand(gameID, challengeCommand, ev)
 			case Move:
 				moveCommand, _ := matched.ToMove()
@@ -203,10 +223,13 @@ func (s SlackHandler) displayEndGame(gm *game.Game, ev *slackevents.AppMentionEv
 }
 
 func (s SlackHandler) handleChallengeCommand(gameID string, command *ChallengeCommand, ev *slackevents.AppMentionEvent) {
+	debugf("handleChallengeCommand: gameID=%s challengedID=%s challenger=%s channel=%s", gameID, command.ChallengedID, ev.User, ev.Channel)
 	if _, err := s.GameStorage.RetrieveGame(gameID); err == nil {
+		debugf("handleChallengeCommand: game already exists for gameID=%s", gameID)
 		s.sendErrorWithHelp(gameID, ev.Channel, "A game already exists in this thread. Try making a new thread.")
 		return
 	}
+	debugf("handleChallengeCommand: no existing game, opening conversation with user=%s", command.ChallengedID)
 	channel, _, _, err := s.SlackClient.OpenConversation(&slack.OpenConversationParameters{
 		ChannelID: "",
 		ReturnIM:  false,
@@ -217,13 +240,19 @@ func (s SlackHandler) handleChallengeCommand(gameID string, command *ChallengeCo
 		s.sendError(gameID, ev.Channel, "Unable to challenge that player.")
 		return
 	}
+	debugf("handleChallengeCommand: opened conversation channelID=%s", channel.ID)
 	challenge := &game.Challenge{
 		ChallengerID: ev.User,
 		ChallengedID: command.ChallengedID,
 		GameID:       gameID,
 		ChannelID:    ev.Channel,
 	}
-	s.ChallengeStorage.StoreChallenge(challenge)
+	if err := s.ChallengeStorage.StoreChallenge(challenge); err != nil {
+		log.Printf("handleChallengeCommand: failed to store challenge: %v", err)
+		s.sendError(gameID, ev.Channel, "There was an issue challenging the player. Please try again.")
+		return
+	}
+	debugf("handleChallengeCommand: challenge stored, sending messages")
 	s.SlackClient.PostMessage(
 		channel.ID,
 		slack.MsgOptionText(fmt.Sprintf("<@%v> has challenged you to a game of chess!", ev.User), false),
