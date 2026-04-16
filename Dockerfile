@@ -1,4 +1,5 @@
-FROM cjsaylor/go-alpine-sdk:1.12 as builder
+FROM golang:1.26-alpine as builder
+RUN apk add --no-cache gcc musl-dev
 WORKDIR /chessbot
 COPY . /chessbot
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags "-s" -v -o web ./cmd/web/web.go

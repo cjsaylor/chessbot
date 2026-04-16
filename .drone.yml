@@ -5,9 +5,9 @@ name: default
 
 steps:
   - name: test
-    image: cjsaylor/go-alpine-sdk:1.12
+    image: golang:1.26-alpine
     commands:
-      - go get -u golang.org/x/tools/cmd/cover
+      - apk add --no-cache gcc musl-dev
       - go test -mod=vendor -cover ./...
   - name: publish
     image: plugins/docker
