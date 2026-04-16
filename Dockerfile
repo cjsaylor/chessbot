@@ -1,11 +1,11 @@
 FROM golang:1.26-alpine as builder
-RUN apk add --no-cache gcc musl-dev
+RUN apk add --no-cache gcc musl-dev sqlite-dev
 WORKDIR /chessbot
 COPY . /chessbot
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags "-s" -v -o web ./cmd/web/web.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -mod=vendor -tags libsqlite3 -ldflags "-s" -v -o web ./cmd/web/web.go
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates sqlite-libs
 RUN apk --no-cache add msttcorefonts-installer fontconfig && \
 	update-ms-fonts && \
 	fc-cache -f
