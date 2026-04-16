@@ -24,7 +24,9 @@ func TestExport(t *testing.T) {
 	gm.Move("d2d4")
 	gm.Move("d7d5")
 	result := gm.Export()
-	expected := "[Site \"Slack ChessBot match\"]\n[White \"a\"]\n[Black \"b\"]\n\n1.d4 d5  *"
+	white := gm.Players[game.White].ID
+	black := gm.Players[game.Black].ID
+	expected := "[Site \"Slack ChessBot match\"]\n[White \"" + white + "\"]\n[Black \"" + black + "\"]\n\n1.d4 d5  *"
 	if result != expected {
 		t.Errorf("expected %v got %v", expected, result)
 	}
